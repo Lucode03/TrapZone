@@ -1,32 +1,29 @@
 package com.example.trapzoneapp.screens.main
 
 import android.Manifest
-import android.os.Looper
-import androidx.annotation.RequiresPermission
+import android.content.pm.PackageManager
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
+import androidx.core.app.ActivityCompat
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationResult
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.isGranted
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
-import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
-import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
@@ -35,33 +32,67 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun MapScreen(modifier: Modifier=Modifier)
 {
     val context = LocalContext.current
-    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-
-    var currentLocation by remember { mutableStateOf(LatLng(43.321445, 21.896104)) }
-    val markerState = remember { MarkerState(position = currentLocation) }
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(currentLocation, 15f)
+    val fusedLocationClient = remember {
+        LocationServices.getFusedLocationProviderClient(context)
     }
-    var uiSettings by remember{
+    var userLocation  by remember { mutableStateOf(LatLng(43.321445, 21.896104)) }
+    val markerState = remember { MarkerState(position = userLocation) }
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(userLocation, 15f)
+    }
+    val uiSettings by remember{
         mutableStateOf(MapUiSettings())
     }
-    var properties by remember {
+    val properties by remember {
         mutableStateOf(MapProperties(mapType = MapType.NORMAL))
     }
+    val locationPermission = rememberPermissionState(
+        permission = Manifest.permission.ACCESS_FINE_LOCATION
+    )
+    LaunchedEffect(locationPermission.status.isGranted) {
+        if (locationPermission.status.isGranted) {
+            if (ActivityCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                    location.let {
+                        userLocation = LatLng(it.latitude, it.longitude)
+                    }
+                }
+            }
+        }
+    }
+    if (locationPermission.status.isGranted) {
 
-    GoogleMap(
-        modifier = Modifier.fillMaxSize(),
-        cameraPositionState = cameraPositionState,
-        properties = properties,
-        uiSettings = uiSettings
-    ) {
-        Marker(
-            state = markerState,
-            title = "Your location"
-        )
+        GoogleMap(
+            modifier = Modifier.fillMaxSize(),
+            cameraPositionState = cameraPositionState,
+            properties = properties,
+            uiSettings = uiSettings
+        ) {
+            Marker(
+                state = markerState,
+                title = "Vaša lokacija",
+                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
+            )
+        }
+    } else {
+        Column(
+            Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text("Potrebna je dozvola za lokaciju")
+            Button(onClick = { locationPermission.launchPermissionRequest() }) {
+                Text("Dozvoli")
+            }
+        }
     }
 }
