@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -12,6 +13,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -79,41 +81,45 @@ fun MapScreen(modifier: Modifier=Modifier)
     }
     val markers = remember { mutableStateListOf<LatLng>() }
     if (locationPermission.status.isGranted) {
+        Scaffold() {paddingValues->
+            Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+                GoogleMap(
+                    modifier = Modifier.fillMaxSize(),
+                    cameraPositionState = cameraPositionState,
+                    properties = properties,
+                    uiSettings = uiSettings
+                ) {
+                    Marker(
+                        state = markerState,
+                        title = "Vaša lokacija",
+                        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
+                    )
+                    markers.forEach { latLng ->
+                        Marker(
+                            state = MarkerState(position = latLng),
+                            title = "Objekat",
+                            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
+                        )
 
-        GoogleMap(
-            modifier = Modifier.fillMaxSize(),
-            cameraPositionState = cameraPositionState,
-            properties = properties,
-            uiSettings = uiSettings
-        ) {
-            Marker(
-                state = markerState,
-                title = "Vaša lokacija",
-                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
-            )
-            markers.forEach { latLng ->
-                Marker(
-                    state = MarkerState(position = latLng),
-                    title = "Objekat",
-                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
-                )
+                    }
+                }
+                FloatingActionButton(
+                    onClick = {
+                        userLocation.let {
+                            markers.add(it)
+                            Toast.makeText(context, "Marker je dodat!", Toast.LENGTH_SHORT).show()
 
+                        }
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Dodaj objekat")
+                }
             }
         }
-        FloatingActionButton(
-            onClick = {
-                userLocation.let {
-                    markers.add(it)
-                    Toast.makeText(context, "Marker je dodat na vašoj trenutnoj lokaciji!", Toast.LENGTH_SHORT).show()
 
-                }
-            },
-            modifier = Modifier
-                //.align(Alignment.BottomEnd)
-                .padding(16.dp)
-        ) {
-            Icon(Icons.Default.Add, contentDescription = "Dodaj objekat")
-        }
     } else {
         Column(
             Modifier.fillMaxSize(),
