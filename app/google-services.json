@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "290102609020",
+    "project_id": "trapzoneapp",
+    "storage_bucket": "trapzoneapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:290102609020:android:1306093b4deb821e2035f9",
+        "android_client_info": {
+          "package_name": "com.example.trapzoneapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCaA7h8MB_hEkO3v4HFHTkZdy9uzfbubvY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">TrapZoneApp</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="email">Email</string>
+    <string name="password">Lozinka</string>
+    <string name="MAPS_API_KEY">AIzaSyAF-WObc2If8I9vzq8BAO5p4HFaS_tFRMk</string>
+</resources>
