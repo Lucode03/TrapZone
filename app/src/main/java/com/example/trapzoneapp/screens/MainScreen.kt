@@ -3,7 +3,9 @@ package com.example.trapzoneapp.screens
 import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
@@ -45,6 +47,9 @@ fun MainScreen(modifier: Modifier =Modifier, authNavController: NavController, a
         }
     )
         { innerPadding ->
+        Button(onClick = {authViewModel.signout()}) {
+            Text(text = "Odjavite se")
+        }
         NavHost(
             navController = mainNavController,
             startDestination = NavItem.Home.route,
