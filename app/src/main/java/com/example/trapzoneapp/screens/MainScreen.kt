@@ -15,8 +15,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.trapzoneapp.AuthState
 import com.example.trapzoneapp.AuthViewModel
+import com.example.trapzoneapp.dataclasses.AuthState
 import com.example.trapzoneapp.dataclasses.NavItem
 import com.example.trapzoneapp.screens.main.HomeScreen
 import com.example.trapzoneapp.screens.main.MapScreen
@@ -47,9 +47,9 @@ fun MainScreen(modifier: Modifier =Modifier, authNavController: NavController, a
         }
     )
         { innerPadding ->
-        Button(onClick = {authViewModel.signout()}) {
-            Text(text = "Odjavite se")
-        }
+//        Button(onClick = {authViewModel.signout()}) {
+//            Text(text = "Odjavite se")
+//        }
         NavHost(
             navController = mainNavController,
             startDestination = NavItem.Home.route,

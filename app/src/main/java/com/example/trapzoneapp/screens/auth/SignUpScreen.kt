@@ -41,9 +41,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import com.example.trapzoneapp.AuthState
 import com.example.trapzoneapp.R
 import com.example.trapzoneapp.AuthViewModel
+import com.example.trapzoneapp.dataclasses.AuthState
 
 @Composable
 fun SignUpScreen(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel)

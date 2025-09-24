@@ -29,9 +29,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.trapzoneapp.AuthState
 import com.example.trapzoneapp.R
 import com.example.trapzoneapp.AuthViewModel
+import com.example.trapzoneapp.dataclasses.AuthState
 
 
 @Composable

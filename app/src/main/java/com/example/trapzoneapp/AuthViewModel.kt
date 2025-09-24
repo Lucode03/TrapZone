@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.trapzoneapp.dataclasses.AuthState
 import com.example.trapzoneapp.helpfunctions.uploadToCloudinary
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
@@ -12,12 +13,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-sealed class AuthState{
-    object  Authenticated :AuthState()
-    object  Unauthenticated :AuthState()
-    object  Loading :AuthState()
-    data class Error(val message:String):AuthState()
-}
 class AuthViewModel: ViewModel() {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
