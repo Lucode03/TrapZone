@@ -2,16 +2,21 @@ package com.example.trapzoneapp.screens.main
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Looper
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -24,13 +29,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
+import com.example.trapzoneapp.R
+import com.example.trapzoneapp.helpfunctions.saveObjectLocationToFirebase
+import com.example.trapzoneapp.helpfunctions.saveTrapLocationToFirebase
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.isGranted
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -50,41 +65,54 @@ fun MapScreen(modifier: Modifier=Modifier)
     val fusedLocationClient = remember {
         LocationServices.getFusedLocationProviderClient(context)
     }
-    var userLocation  by remember { mutableStateOf(LatLng(43.321445, 21.896104)) }
-    val markerState = remember { MarkerState(position = userLocation) }
+    var userLocation  by remember { mutableStateOf(LatLng(43.321473, 21.896174)) }
+    val markerState = remember{ MarkerState(position = userLocation)}
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(userLocation, 15f)
     }
-    val uiSettings by remember{
-        mutableStateOf(MapUiSettings())
-    }
-    val properties by remember {
-        mutableStateOf(MapProperties(mapType = MapType.NORMAL))
-    }
+    val uiSettings by remember{ mutableStateOf(MapUiSettings(zoomControlsEnabled = false)) }
+    val properties by remember { mutableStateOf(MapProperties(mapType = MapType.NORMAL)) }
     val locationPermission = rememberPermissionState(
         permission = Manifest.permission.ACCESS_FINE_LOCATION
     )
     LaunchedEffect(locationPermission.status.isGranted) {
         if (locationPermission.status.isGranted) {
             if (ActivityCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
+                    context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+            {
+
                 fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                    location.let {
+                    location?.let {
                         userLocation = LatLng(it.latitude, it.longitude)
+                        markerState.position = userLocation
+                        cameraPositionState.position=CameraPosition.fromLatLngZoom(
+                            userLocation, 15f)
                     }
                 }
+                val locationRequest = LocationRequest.Builder(
+                    Priority.PRIORITY_HIGH_ACCURACY, 5000).build()
+
+                val callback = object : LocationCallback() {
+                    override fun onLocationResult(result: LocationResult) {
+                        result.lastLocation?.let { location ->
+                            userLocation = LatLng(location.latitude, location.longitude)
+                            markerState.position=userLocation
+                            cameraPositionState.position = CameraPosition.fromLatLngZoom(
+                                userLocation, 15f)
+                        }
+                    }
+                }
+                fusedLocationClient.requestLocationUpdates(locationRequest, callback, Looper.getMainLooper())
+
             }
         }
     }
     val markers = remember { mutableStateListOf<LatLng>() }
     if (locationPermission.status.isGranted) {
         Scaffold() {paddingValues->
-            Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+            Box(modifier = modifier.fillMaxSize().padding(paddingValues)) {
                 GoogleMap(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = modifier.fillMaxSize(),
                     cameraPositionState = cameraPositionState,
                     properties = properties,
                     uiSettings = uiSettings
@@ -106,23 +134,45 @@ fun MapScreen(modifier: Modifier=Modifier)
                 FloatingActionButton(
                     onClick = {
                         userLocation.let {
-                            markers.add(it)
-                            Toast.makeText(context, "Marker je dodat!", Toast.LENGTH_SHORT).show()
-
+                            saveObjectLocationToFirebase(userLocation,context)
+                            Toast.makeText(context, "Objekat je dodat!", Toast.LENGTH_SHORT).show()
                         }
                     },
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(16.dp)
+                    containerColor = Color.Transparent,
+                    modifier= Modifier.size(80.dp).align(Alignment.BottomStart),
+                    elevation = FloatingActionButtonDefaults.elevation(0.dp)
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Dodaj objekat")
+//                    Image(
+//                        painter = painterResource(id = R.drawable.trap), // tvoja slika
+//                        contentDescription = "Dodaj zamku",
+//                        contentScale = ContentScale.FillBounds, // popunjava ceo FAB
+//                        modifier = Modifier.fillMaxSize()
+//                    )
+                }
+                FloatingActionButton(
+                    onClick = {
+                        userLocation.let {
+                            saveTrapLocationToFirebase(userLocation,context)
+                            Toast.makeText(context, "Zamka je dodata!", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    containerColor = Color.Transparent,
+                    modifier= Modifier.size(80.dp).align(Alignment.BottomEnd),
+                    elevation = FloatingActionButtonDefaults.elevation(0.dp)
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.trap), // tvoja slika
+                        contentDescription = "Dodaj zamku",
+                        contentScale = ContentScale.FillBounds, // popunjava ceo FAB
+                        modifier = Modifier.fillMaxSize()
+                    )
                 }
             }
         }
 
     } else {
         Column(
-            Modifier.fillMaxSize(),
+            modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {

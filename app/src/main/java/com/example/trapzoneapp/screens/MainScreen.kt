@@ -37,7 +37,6 @@ fun MainScreen(modifier: Modifier =Modifier, authNavController: NavController, a
     }
     BackHandler {
         if (!mainNavController.popBackStack()) {
-            // Ako nema gde da se vrati u bottom nav
             activity?.finish()
         }
     }
@@ -47,7 +46,7 @@ fun MainScreen(modifier: Modifier =Modifier, authNavController: NavController, a
         }
     )
         { innerPadding ->
-        Button(onClick = {authViewModel.signout()}) {
+        Button(onClick = { authViewModel.signout() }) {
             Text(text = "Odjavite se")
         }
         NavHost(
