@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -24,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -82,7 +84,8 @@ fun LoginScreen(modifier: Modifier=Modifier,navController: NavController,authVie
                 email=it
             },
                 label={ Text(text= stringResource(R.string.email))
-                })
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email))
             Spacer(modifier = Modifier.height((20.dp)))
 
             OutlinedTextField(colors = TextFieldDefaults.colors(unfocusedContainerColor = Color.LightGray,)

@@ -47,9 +47,9 @@ fun MainScreen(modifier: Modifier =Modifier, authNavController: NavController, a
         }
     )
         { innerPadding ->
-//        Button(onClick = {authViewModel.signout()}) {
-//            Text(text = "Odjavite se")
-//        }
+        Button(onClick = {authViewModel.signout()}) {
+            Text(text = "Odjavite se")
+        }
         NavHost(
             navController = mainNavController,
             startDestination = NavItem.Home.route,

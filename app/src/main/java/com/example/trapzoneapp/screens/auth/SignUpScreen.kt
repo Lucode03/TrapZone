@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedTextField
@@ -35,6 +36,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -112,7 +114,8 @@ fun SignUpScreen(modifier: Modifier = Modifier, navController: NavController, au
                 email=it
             },
                 label={ Text(text = stringResource(R.string.email))
-                }
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
             )
             Spacer(modifier = Modifier.height((20.dp)))
 
@@ -121,31 +124,44 @@ fun SignUpScreen(modifier: Modifier = Modifier, navController: NavController, au
                 password=it
             },
                 label={ Text(text = stringResource(R.string.password))
-                }, visualTransformation = PasswordVisualTransformation()
+                },
+                visualTransformation = PasswordVisualTransformation()
             )
             Spacer(modifier = Modifier.height((20.dp)))
             OutlinedTextField(colors = TextFieldDefaults.colors(unfocusedContainerColor = Color.LightGray)
-                ,value = name, onValueChange = {
-                name=it
-            },
+                ,value = name,
+                onValueChange = { input ->
+                    if (input.all { it.isLetter() || it.isWhitespace() }) {
+                        name = input
+                    }
+                },
                 label={ Text(text="Ime")
-                }
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
             )
             Spacer(modifier = Modifier.height((20.dp)))
             OutlinedTextField(colors = TextFieldDefaults.colors(unfocusedContainerColor = Color.LightGray)
-                ,value = surname, onValueChange = {
-                surname=it
-            },
+                ,value = surname,
+                onValueChange = { input ->
+                    if (input.all { it.isLetter() || it.isWhitespace() }) {
+                        surname = input
+                    }
+                },
                 label={ Text(text="Prezime")
-                }
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
             )
             Spacer(modifier = Modifier.height((20.dp)))
-            OutlinedTextField(colors = TextFieldDefaults.colors(unfocusedContainerColor = Color.LightGray,)
-                ,value = phone, onValueChange = {
-                phone=it
-            },
+            OutlinedTextField(colors = TextFieldDefaults.colors(unfocusedContainerColor = Color.LightGray)
+                ,value = phone,
+                onValueChange = {input ->
+                    if (input.all { it.isDigit() }) {
+                        phone = input
+                    }
+                },
                 label={ Text(text="Broj telefona")
-                }
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
             )
             Spacer(modifier = Modifier.height((20.dp)))
             Button(onClick = { launcher.launch("image/*") }) {
