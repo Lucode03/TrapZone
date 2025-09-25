@@ -1,14 +1,10 @@
 package com.example.trapzoneapp.dataclasses
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.ui.graphics.vector.ImageVector
+import com.example.trapzoneapp.R
 
-sealed class NavItem(val route: String, val label: String, val icon: ImageVector)
+sealed class NavItem(val route: String, val label: String, val icon: Int)
 {
-    object Rankings : NavItem("rankings", "Rankings", Icons.Default.Star)
-    object Home : NavItem("home", "Home", Icons.Default.Home)
-    object Map : NavItem("map", "Map", Icons.Default.LocationOn)
+    object Rankings : NavItem("rankings", "Rankings",R.drawable.rankings_icon)
+    object Home : NavItem("home", "Home", R.drawable.home_icon)
+    object Map : NavItem("map", "Map", R.drawable.map_icon)
 }

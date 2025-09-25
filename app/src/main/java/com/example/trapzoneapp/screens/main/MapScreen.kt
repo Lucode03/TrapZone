@@ -8,22 +8,17 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -107,9 +102,9 @@ fun MapScreen(modifier: Modifier=Modifier)
             }
         }
     }
-    val markers = remember { mutableStateListOf<LatLng>() }
+    //val markers = remember { mutableStateListOf<LatLng>() }
     if (locationPermission.status.isGranted) {
-        Scaffold() {paddingValues->
+        Scaffold {paddingValues->
             Box(modifier = modifier.fillMaxSize().padding(paddingValues)) {
                 GoogleMap(
                     modifier = modifier.fillMaxSize(),
@@ -122,14 +117,14 @@ fun MapScreen(modifier: Modifier=Modifier)
                         title = "Vaša lokacija",
                         icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
                     )
-                    markers.forEach { latLng ->
-                        Marker(
-                            state = MarkerState(position = latLng),
-                            title = "Objekat",
-                            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
-                        )
-
-                    }
+//                    markers.forEach { latLng ->
+//                        Marker(
+//                            state = MarkerState(position = latLng),
+//                            title = "Objekat",
+//                            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
+//                        )
+//
+//                    }
                 }
                 FloatingActionButton(
                     onClick = {
@@ -142,12 +137,12 @@ fun MapScreen(modifier: Modifier=Modifier)
                     modifier= Modifier.size(80.dp).align(Alignment.BottomStart),
                     elevation = FloatingActionButtonDefaults.elevation(0.dp)
                 ) {
-//                    Image(
-//                        painter = painterResource(id = R.drawable.trap), // tvoja slika
-//                        contentDescription = "Dodaj zamku",
-//                        contentScale = ContentScale.FillBounds, // popunjava ceo FAB
-//                        modifier = Modifier.fillMaxSize()
-//                    )
+                    Image(
+                        painter = painterResource(id = R.drawable.pin),
+                        contentDescription = "Dodaj objekat",
+                        contentScale = ContentScale.FillBounds,
+                        modifier = Modifier.fillMaxSize()
+                    )
                 }
                 FloatingActionButton(
                     onClick = {
@@ -161,9 +156,9 @@ fun MapScreen(modifier: Modifier=Modifier)
                     elevation = FloatingActionButtonDefaults.elevation(0.dp)
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.trap), // tvoja slika
+                        painter = painterResource(id = R.drawable.trap),
                         contentDescription = "Dodaj zamku",
-                        contentScale = ContentScale.FillBounds, // popunjava ceo FAB
+                        contentScale = ContentScale.FillBounds,
                         modifier = Modifier.fillMaxSize()
                     )
                 }
