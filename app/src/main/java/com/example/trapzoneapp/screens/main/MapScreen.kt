@@ -1,6 +1,7 @@
 package com.example.trapzoneapp.screens.main
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Looper
 import android.widget.Toast
@@ -19,9 +20,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,8 +34,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import com.example.trapzoneapp.R
+import com.example.trapzoneapp.helpfunctions.checkNearbyTraps
+import com.example.trapzoneapp.helpfunctions.checkNearbyUsers
+import com.example.trapzoneapp.helpfunctions.loadNearbyObjects
 import com.example.trapzoneapp.helpfunctions.saveObjectLocationToFirebase
 import com.example.trapzoneapp.helpfunctions.saveTrapLocationToFirebase
+import com.example.trapzoneapp.helpfunctions.sendUserLocationToFirebase
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.isGranted
@@ -44,6 +51,7 @@ import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
@@ -70,12 +78,12 @@ fun MapScreen(modifier: Modifier=Modifier)
     val locationPermission = rememberPermissionState(
         permission = Manifest.permission.ACCESS_FINE_LOCATION
     )
+    val markers = remember { mutableStateListOf<LatLng>() }
     LaunchedEffect(locationPermission.status.isGranted) {
         if (locationPermission.status.isGranted) {
             if (ActivityCompat.checkSelfPermission(
                     context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
             {
-
                 fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                     location?.let {
                         userLocation = LatLng(it.latitude, it.longitude)
@@ -94,6 +102,11 @@ fun MapScreen(modifier: Modifier=Modifier)
                             markerState.position=userLocation
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(
                                 userLocation, 15f)
+
+                            sendUserLocationToFirebase(userLocation,context)
+                            checkNearbyUsers(context,userLocation)
+                            loadNearbyObjects(context,userLocation,markers)
+                            checkNearbyTraps(context, userLocation)
                         }
                     }
                 }
@@ -104,66 +117,8 @@ fun MapScreen(modifier: Modifier=Modifier)
     }
     //val markers = remember { mutableStateListOf<LatLng>() }
     if (locationPermission.status.isGranted) {
-        Scaffold {paddingValues->
-            Box(modifier = modifier.fillMaxSize().padding(paddingValues)) {
-                GoogleMap(
-                    modifier = modifier.fillMaxSize(),
-                    cameraPositionState = cameraPositionState,
-                    properties = properties,
-                    uiSettings = uiSettings
-                ) {
-                    Marker(
-                        state = markerState,
-                        title = "Vaša lokacija",
-                        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
-                    )
-//                    markers.forEach { latLng ->
-//                        Marker(
-//                            state = MarkerState(position = latLng),
-//                            title = "Objekat",
-//                            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
-//                        )
-//
-//                    }
-                }
-                FloatingActionButton(
-                    onClick = {
-                        userLocation.let {
-                            saveObjectLocationToFirebase(userLocation,context)
-                            Toast.makeText(context, "Objekat je dodat!", Toast.LENGTH_SHORT).show()
-                        }
-                    },
-                    containerColor = Color.Transparent,
-                    modifier= Modifier.size(80.dp).align(Alignment.BottomStart),
-                    elevation = FloatingActionButtonDefaults.elevation(0.dp)
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.pin),
-                        contentDescription = "Dodaj objekat",
-                        contentScale = ContentScale.FillBounds,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-                FloatingActionButton(
-                    onClick = {
-                        userLocation.let {
-                            saveTrapLocationToFirebase(userLocation,context)
-                            Toast.makeText(context, "Zamka je dodata!", Toast.LENGTH_SHORT).show()
-                        }
-                    },
-                    containerColor = Color.Transparent,
-                    modifier= Modifier.size(80.dp).align(Alignment.BottomEnd),
-                    elevation = FloatingActionButtonDefaults.elevation(0.dp)
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.trap),
-                        contentDescription = "Dodaj zamku",
-                        contentScale = ContentScale.FillBounds,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-            }
-        }
+        MapScreenContent(context,modifier,cameraPositionState,
+            properties,uiSettings,markerState,userLocation,markers)
 
     } else {
         Column(
@@ -174,6 +129,74 @@ fun MapScreen(modifier: Modifier=Modifier)
             Text("Potrebna je dozvola za lokaciju")
             Button(onClick = { locationPermission.launchPermissionRequest() }) {
                 Text("Dozvoli")
+            }
+        }
+    }
+}
+@Composable
+fun MapScreenContent(context: Context, modifier: Modifier,
+                     cameraPositionState:CameraPositionState,
+                     properties: MapProperties, uiSettings: MapUiSettings,
+                     markerState: MarkerState, userLocation: LatLng,
+                     markers: SnapshotStateList<LatLng>)
+{
+    Scaffold {paddingValues->
+        Box(modifier = modifier.fillMaxSize().padding(paddingValues)) {
+            GoogleMap(
+                modifier = modifier.fillMaxSize(),
+                cameraPositionState = cameraPositionState,
+                properties = properties,
+                uiSettings = uiSettings
+            ) {
+                Marker(
+                    state = markerState,
+                    title = "Vaša lokacija",
+                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
+                )
+//                markers.forEach { latLng ->
+//                    Marker(
+//                        state = MarkerState(position = latLng),
+//                        title = "Objekat",
+//                        //dodaj objekat pravi
+//                    )
+//
+//                }
+            }
+            FloatingActionButton(
+                onClick = {
+                    userLocation.let {
+                        saveObjectLocationToFirebase(userLocation,context)
+                        Toast.makeText(context, "Objekat je dodat!", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                containerColor = Color.Transparent,
+                modifier= Modifier.size(80.dp).align(Alignment.BottomStart),
+                elevation = FloatingActionButtonDefaults.elevation(0.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.pin),
+                    contentDescription = "Dodaj objekat",
+                    contentScale = ContentScale.FillBounds,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+            FloatingActionButton(
+                onClick = {
+                    userLocation.let {
+                        saveTrapLocationToFirebase(userLocation,context)
+                        Toast.makeText(context, "Zamka je dodata!", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                containerColor = Color.Transparent,
+                modifier= Modifier.size(80.dp).align(Alignment.BottomEnd),
+                elevation = FloatingActionButtonDefaults.elevation(0.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.trap),
+                    contentDescription = "Dodaj zamku",
+                    contentScale = ContentScale.FillBounds,
+                    modifier = Modifier.fillMaxSize()
+                )
             }
         }
     }

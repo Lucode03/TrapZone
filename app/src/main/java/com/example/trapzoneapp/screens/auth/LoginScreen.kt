@@ -78,7 +78,7 @@ fun LoginScreen(modifier: Modifier=Modifier,navController: NavController,authVie
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height((50.dp)))
+            Spacer(modifier = Modifier.height((50.dp)))//promeni boju teksta u crnu
             OutlinedTextField(colors = TextFieldDefaults.colors(unfocusedContainerColor = Color.LightGray,)
                 ,value = email, onValueChange = {
                 email=it

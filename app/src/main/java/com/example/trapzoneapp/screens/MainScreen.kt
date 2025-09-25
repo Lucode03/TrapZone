@@ -52,7 +52,7 @@ fun MainScreen(modifier: Modifier =Modifier, authNavController: NavController, a
         NavHost(
             navController = mainNavController,
             startDestination = NavItem.Home.route,
-            modifier = Modifier.padding(innerPadding)
+            modifier = modifier.padding(innerPadding)
         ) {
             composable(NavItem.Home.route) { HomeScreen() }
             composable(NavItem.Rankings.route) { RankingsScreen() }

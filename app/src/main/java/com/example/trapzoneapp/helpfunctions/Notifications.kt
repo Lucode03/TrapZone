@@ -6,16 +6,22 @@ import android.content.Context
 import android.os.Build
 import androidx.core.app.NotificationCompat
 
-fun showNotification(context: Context,title: String, message: String) {
-    val channelId = "nearby_channel"
+var lastNotificationTime = 0L
 
+fun showNotification(context: Context,title: String, message: String) {
+
+    val currentTime = System.currentTimeMillis()
+    if (currentTime - lastNotificationTime < 30000)
+        return
+    lastNotificationTime = currentTime
+    val channelId = "nearby_channel"
     val notificationManager =
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         val channel = NotificationChannel(
             channelId,
-            "Nearby Alerts",
+            "Neko ili nešto je u blizini",
             NotificationManager.IMPORTANCE_HIGH
         )
         notificationManager.createNotificationChannel(channel)
