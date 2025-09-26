@@ -19,7 +19,7 @@ import com.example.trapzoneapp.AuthViewModel
 import com.example.trapzoneapp.dataclasses.AuthState
 import com.example.trapzoneapp.dataclasses.NavItem
 import com.example.trapzoneapp.screens.main.HomeScreen
-import com.example.trapzoneapp.screens.main.MapScreen
+import com.example.trapzoneapp.screens.main.map.MapScreen
 import com.example.trapzoneapp.screens.main.RankingsScreen
 
 @Composable

@@ -1,4 +1,4 @@
-package com.example.trapzoneapp.screens.main
+package com.example.trapzoneapp.screens.main.map
 
 import android.Manifest
 import android.content.Context
@@ -12,10 +12,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,14 +34,18 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.core.app.ActivityCompat
 import com.example.trapzoneapp.R
 import com.example.trapzoneapp.helpfunctions.checkNearbyTraps
 import com.example.trapzoneapp.helpfunctions.checkNearbyUsers
 import com.example.trapzoneapp.helpfunctions.loadNearbyObjects
-import com.example.trapzoneapp.helpfunctions.saveObjectLocationToFirebase
-import com.example.trapzoneapp.helpfunctions.saveTrapLocationToFirebase
+import com.example.trapzoneapp.helpfunctions.removeObjectFromFirebase
+import com.example.trapzoneapp.helpfunctions.saveObjectToFirebase
+import com.example.trapzoneapp.helpfunctions.saveTrapToFirebase
 import com.example.trapzoneapp.helpfunctions.sendUserLocationToFirebase
+import com.example.trapzoneapp.helpfunctions.updateUserPoints
+import com.example.trapzoneapp.models.RewardsObjectInstance
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.isGranted
@@ -78,7 +84,7 @@ fun MapScreen(modifier: Modifier=Modifier)
     val locationPermission = rememberPermissionState(
         permission = Manifest.permission.ACCESS_FINE_LOCATION
     )
-    val markers = remember { mutableStateListOf<LatLng>() }
+    val markers = remember { mutableStateListOf<RewardsObjectInstance>() }
     LaunchedEffect(locationPermission.status.isGranted) {
         if (locationPermission.status.isGranted) {
             if (ActivityCompat.checkSelfPermission(
@@ -138,8 +144,10 @@ fun MapScreenContent(context: Context, modifier: Modifier,
                      cameraPositionState:CameraPositionState,
                      properties: MapProperties, uiSettings: MapUiSettings,
                      markerState: MarkerState, userLocation: LatLng,
-                     markers: SnapshotStateList<LatLng>)
+                     markers: SnapshotStateList<RewardsObjectInstance>)
 {
+    var showObjectPicker by remember { mutableStateOf(false) }
+    var showTrapPicker by remember { mutableStateOf(false) }
     Scaffold {paddingValues->
         Box(modifier = modifier.fillMaxSize().padding(paddingValues)) {
             GoogleMap(
@@ -153,21 +161,24 @@ fun MapScreenContent(context: Context, modifier: Modifier,
                     title = "Vaša lokacija",
                     icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
                 )
-//                markers.forEach { latLng ->
-//                    Marker(
-//                        state = MarkerState(position = latLng),
-//                        title = "Objekat",
-//                        //dodaj objekat pravi
-//                    )
-//
-//                }
+                markers.forEach { obj ->
+                    Marker(
+                        state = MarkerState(position = obj.location),
+                        title = obj.rewardsObject.type+" objekat",
+                        icon = obj.rewardsObject.getMarkerIcon(),
+                        onClick = {
+                            updateUserPoints(obj.rewardsObject.exp,context,"za skupljanje ${obj.rewardsObject.type} objekta")
+                            removeObjectFromFirebase(obj)
+                            markers.remove(obj)
+                            true
+                        }
+                    )
+
+                }
             }
             FloatingActionButton(
                 onClick = {
-                    userLocation.let {
-                        saveObjectLocationToFirebase(userLocation,context)
-                        Toast.makeText(context, "Objekat je dodat!", Toast.LENGTH_SHORT).show()
-                    }
+                    showObjectPicker = true
                 },
                 containerColor = Color.Transparent,
                 modifier= Modifier.size(80.dp).align(Alignment.BottomStart),
@@ -180,12 +191,25 @@ fun MapScreenContent(context: Context, modifier: Modifier,
                     modifier = Modifier.fillMaxSize()
                 )
             }
+            if (showObjectPicker) {
+                Dialog(onDismissRequest = { showObjectPicker = false }) {
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        tonalElevation = 8.dp
+                    ) {
+                        ObjectTypePicker( { selectedType ->
+                            saveObjectToFirebase(selectedType, userLocation, context)
+                            Toast.makeText(context, "Objekat je dodat!", Toast.LENGTH_SHORT).show()
+                            showObjectPicker = false
+                        },
+                            onDismiss = { showObjectPicker = false }
+                        )
+                    }
+                }
+            }
             FloatingActionButton(
                 onClick = {
-                    userLocation.let {
-                        saveTrapLocationToFirebase(userLocation,context)
-                        Toast.makeText(context, "Zamka je dodata!", Toast.LENGTH_SHORT).show()
-                    }
+                    showTrapPicker = true
                 },
                 containerColor = Color.Transparent,
                 modifier= Modifier.size(80.dp).align(Alignment.BottomEnd),
@@ -197,6 +221,21 @@ fun MapScreenContent(context: Context, modifier: Modifier,
                     contentScale = ContentScale.FillBounds,
                     modifier = Modifier.fillMaxSize()
                 )
+            }
+            if (showTrapPicker) {
+                Dialog(onDismissRequest = { showTrapPicker = false }) {
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        tonalElevation = 8.dp
+                    ) {
+                        TrapTypePicker({ selectedType ->
+                            saveTrapToFirebase(selectedType, userLocation, context)
+                            Toast.makeText(context, "Zamka je postavljena!", Toast.LENGTH_SHORT).show()
+                            showTrapPicker = false
+                        },
+                            onDismiss = { showTrapPicker = false }  )
+                    }
+                }
             }
         }
     }
