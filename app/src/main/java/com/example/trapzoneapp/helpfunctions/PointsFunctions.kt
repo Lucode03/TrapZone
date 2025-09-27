@@ -38,7 +38,7 @@ fun updateUserPoints(points: Int, context: Context,msg:String) {
                 if(points>0)
                     Toast.makeText(context, "Dobili ste +${points} poena ${msg}!", Toast.LENGTH_SHORT).show()
                 else
-                    Toast.makeText(context, "Izgublili ste ${abs(points)} poena.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Izgublili ste ${abs(points)} poena ${msg}.", Toast.LENGTH_SHORT).show()
             }
         }
     })

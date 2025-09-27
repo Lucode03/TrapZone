@@ -21,10 +21,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -41,14 +43,17 @@ import com.example.trapzoneapp.helpfunctions.checkNearbyTraps
 import com.example.trapzoneapp.helpfunctions.checkNearbyUsers
 import com.example.trapzoneapp.helpfunctions.loadNearbyObjects
 import com.example.trapzoneapp.helpfunctions.removeObjectFromFirebase
+import com.example.trapzoneapp.helpfunctions.removeTrapFromFirebase
 import com.example.trapzoneapp.helpfunctions.saveObjectToFirebase
 import com.example.trapzoneapp.helpfunctions.saveTrapToFirebase
 import com.example.trapzoneapp.helpfunctions.sendUserLocationToFirebase
 import com.example.trapzoneapp.helpfunctions.updateUserPoints
 import com.example.trapzoneapp.models.RewardsObjectInstance
+import com.example.trapzoneapp.models.TrapInstance
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.isGranted
+import com.google.android.gms.common.api.Scope
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -65,6 +70,8 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -85,6 +92,8 @@ fun MapScreen(modifier: Modifier=Modifier)
         permission = Manifest.permission.ACCESS_FINE_LOCATION
     )
     val markers = remember { mutableStateListOf<RewardsObjectInstance>() }
+    val trapQueue = remember { mutableStateListOf<TrapInstance?>() }
+    val currentTrap = remember { mutableStateOf<TrapInstance?>(null) }
     LaunchedEffect(locationPermission.status.isGranted) {
         if (locationPermission.status.isGranted) {
             if (ActivityCompat.checkSelfPermission(
@@ -112,7 +121,13 @@ fun MapScreen(modifier: Modifier=Modifier)
                             sendUserLocationToFirebase(userLocation,context)
                             checkNearbyUsers(context,userLocation)
                             loadNearbyObjects(context,userLocation,markers)
-                            checkNearbyTraps(context, userLocation)
+                            checkNearbyTraps(context, userLocation){ traps->
+                                traps.forEach { trap ->
+                                    if (!trapQueue.contains(trap) && currentTrap.value != trap) {
+                                        trapQueue.add(trap)
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -121,10 +136,11 @@ fun MapScreen(modifier: Modifier=Modifier)
             }
         }
     }
-    //val markers = remember { mutableStateListOf<LatLng>() }
+
     if (locationPermission.status.isGranted) {
         MapScreenContent(context,modifier,cameraPositionState,
             properties,uiSettings,markerState,userLocation,markers)
+        TrapHandler(trapQueue,currentTrap)
 
     } else {
         Column(
@@ -136,6 +152,32 @@ fun MapScreen(modifier: Modifier=Modifier)
             Button(onClick = { locationPermission.launchPermissionRequest() }) {
                 Text("Dozvoli")
             }
+        }
+    }
+}
+@Composable
+fun TrapHandler(trapQueue: SnapshotStateList<TrapInstance?>, currentTrap: MutableState<TrapInstance?>) {
+    LaunchedEffect(trapQueue, currentTrap.value) {
+        while (true) {
+            if (currentTrap.value == null && trapQueue.isNotEmpty()) {
+                delay(2000) // pauza između zamki
+                currentTrap.value = trapQueue.first()
+                trapQueue.removeAt(0)
+            } else {
+                delay(100) // mali delay da se ne puni CPU
+            }
+        }
+    }
+
+    currentTrap.value?.let { trap ->
+        Dialog(onDismissRequest = { currentTrap.value = null }) {
+            TrapScreen(
+                trap = trap,
+                onResult = {
+                    removeTrapFromFirebase(trap)
+                    currentTrap.value = null
+                }
+            )
         }
     }
 }

@@ -6,9 +6,9 @@ sealed class Question(val time: Int, val op1: Int, val op2: Int) {
 
     val result: Int = op1 + op2
 
-    class FourDigit(op1: Int, op2: Int) : Question(17, op1, op2)
-    class ThreeDigit(op1: Int, op2: Int) : Question(12, op1, op2)
-    class TwoDigit(op1: Int, op2: Int) : Question(8, op1, op2)
+    class FourDigit(op1: Int, op2: Int) : Question(20, op1, op2)
+    class ThreeDigit(op1: Int, op2: Int) : Question(15, op1, op2)
+    class TwoDigit(op1: Int, op2: Int) : Question(10, op1, op2)
     class OneDigit(op1: Int, op2: Int) : Question(5, op1, op2)
 
     companion object {
