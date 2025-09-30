@@ -14,8 +14,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedTextField
@@ -38,6 +41,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -46,6 +50,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.trapzoneapp.R
 import com.example.trapzoneapp.AuthViewModel
 import com.example.trapzoneapp.dataclasses.AuthState
+import com.example.trapzoneapp.screens.auth.fields.CustomTextField
 
 @Composable
 fun SignUpScreen(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel)
@@ -75,6 +80,7 @@ fun SignUpScreen(modifier: Modifier = Modifier, navController: NavController, au
     }
     val authState = authViewModel.authState.observeAsState()
     val context = LocalContext.current
+
     LaunchedEffect(authState.value) {
         when(authState.value){
             is AuthState.Authenticated -> navController.navigate("main")
@@ -85,14 +91,14 @@ fun SignUpScreen(modifier: Modifier = Modifier, navController: NavController, au
             }
             else -> Unit
         }
-    }//napravi data class za sva ova polja
+    }
     Box(modifier = modifier.fillMaxSize()) {
         Image(painter = painterResource(id= R.drawable.login_background),
             contentDescription = "Login background",
             modifier = Modifier.fillMaxSize())
 
         Column(
-            modifier = modifier.fillMaxSize(),
+            modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -109,65 +115,65 @@ fun SignUpScreen(modifier: Modifier = Modifier, navController: NavController, au
             Spacer(modifier = Modifier.height((30.dp)))
             HorizontalDivider(thickness = 1.dp, color = Color.Gray, modifier = Modifier.fillMaxWidth(0.9f))
             Spacer(modifier = Modifier.height((15.dp)))
-            OutlinedTextField( colors = TextFieldDefaults.colors(unfocusedContainerColor = Color.LightGray)
-                 ,value= email, onValueChange = {
-                email=it
-            },
-                label={ Text(text = stringResource(R.string.email))
-                },
+
+            CustomTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = stringResource(R.string.email),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
             )
+
             Spacer(modifier = Modifier.height((20.dp)))
 
-            OutlinedTextField(colors = TextFieldDefaults.colors(unfocusedContainerColor = Color.LightGray)
-                ,value = password, onValueChange = {
-                password=it
-            },
-                label={ Text(text = stringResource(R.string.password))
-                },
+            CustomTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = stringResource(R.string.password),
                 visualTransformation = PasswordVisualTransformation()
             )
+
             Spacer(modifier = Modifier.height((20.dp)))
-            OutlinedTextField(colors = TextFieldDefaults.colors(unfocusedContainerColor = Color.LightGray)
-                ,value = name,
+
+            CustomTextField(
+                value = name,
                 onValueChange = { input ->
                     if (input.all { it.isLetter() || it.isWhitespace() }) {
                         name = input
                     }
                 },
-                label={ Text(text="Ime")
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                label = "Ime",
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
             )
             Spacer(modifier = Modifier.height((20.dp)))
-            OutlinedTextField(colors = TextFieldDefaults.colors(unfocusedContainerColor = Color.LightGray)
-                ,value = surname,
+
+            CustomTextField(
+                value = surname,
                 onValueChange = { input ->
                     if (input.all { it.isLetter() || it.isWhitespace() }) {
                         surname = input
                     }
                 },
-                label={ Text(text="Prezime")
-                },
+                label = "Prezime",
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
             )
             Spacer(modifier = Modifier.height((20.dp)))
-            OutlinedTextField(colors = TextFieldDefaults.colors(unfocusedContainerColor = Color.LightGray)
-                ,value = phone,
-                onValueChange = {input ->
+
+            CustomTextField(
+                value = phone,
+                onValueChange = { input ->
                     if (input.all { it.isDigit() }) {
                         phone = input
                     }
                 },
-                label={ Text(text="Broj telefona")
-                },
+                label = "Broj telefona",
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
             )
+
             Spacer(modifier = Modifier.height((20.dp)))
+
             Button(onClick = { launcher.launch("image/*") }) {
                 Text(text = if (photoUri == null) "Izaberi sliku" else "Promeni sliku")
             }
-
             photoUri?.let { uri ->
                 Spacer(modifier = Modifier.height(16.dp))
                 Image(
@@ -181,6 +187,7 @@ fun SignUpScreen(modifier: Modifier = Modifier, navController: NavController, au
             Spacer(modifier = Modifier.height((15.dp)))
             HorizontalDivider(thickness = 1.dp, color = Color.Gray, modifier = Modifier.fillMaxWidth(0.9f))
             Spacer(modifier = Modifier.height((15.dp)))
+
             Button(onClick = {
                     authViewModel.signup(email, password, name, surname, phone, photoUri, context)
             },

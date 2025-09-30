@@ -34,6 +34,7 @@ import androidx.navigation.NavController
 import com.example.trapzoneapp.R
 import com.example.trapzoneapp.AuthViewModel
 import com.example.trapzoneapp.dataclasses.AuthState
+import com.example.trapzoneapp.screens.auth.fields.CustomTextField
 
 
 @Composable
@@ -78,22 +79,24 @@ fun LoginScreen(modifier: Modifier=Modifier,navController: NavController,authVie
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height((50.dp)))//promeni boju teksta u crnu
-            OutlinedTextField(colors = TextFieldDefaults.colors(unfocusedContainerColor = Color.LightGray,)
-                ,value = email, onValueChange = {
-                email=it
-            },
-                label={ Text(text= stringResource(R.string.email))
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email))
+            Spacer(modifier = Modifier.height((50.dp)))
+
+            CustomTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = stringResource(R.string.email),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+            )
+
             Spacer(modifier = Modifier.height((20.dp)))
 
-            OutlinedTextField(colors = TextFieldDefaults.colors(unfocusedContainerColor = Color.LightGray,)
-                ,value = password, onValueChange = {
-                password=it
-            },
-                label={ Text(text=stringResource(R.string.password))
-                }, visualTransformation = PasswordVisualTransformation())
+            CustomTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = stringResource(R.string.password),
+                visualTransformation = PasswordVisualTransformation()
+            )
+
             Spacer(modifier = Modifier.height((40.dp)))
 
             Button(onClick = {
