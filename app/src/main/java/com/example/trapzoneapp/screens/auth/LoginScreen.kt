@@ -3,6 +3,7 @@ package com.example.trapzoneapp.screens.auth
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -58,13 +60,19 @@ fun LoginScreen(modifier: Modifier=Modifier,navController: NavController,authVie
             }
             else -> Unit
         }
-    }//napravi data class za sva ova polja
+    }
+    val focusManager = LocalFocusManager.current
     Box(modifier = modifier.fillMaxSize()) {
         Image(painter = painterResource(id= R.drawable.login_background),
             contentDescription = "Login background",
             modifier = Modifier.fillMaxSize())
         Column(
-            modifier = modifier.fillMaxSize(),
+            modifier = modifier.fillMaxSize()
+                            .clickable(indication = null,
+                            interactionSource = remember { MutableInteractionSource() }
+                        ) {
+                            focusManager.clearFocus()
+                        },
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
