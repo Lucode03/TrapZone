@@ -26,7 +26,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -39,21 +38,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.app.ActivityCompat
 import com.example.trapzoneapp.R
-import com.example.trapzoneapp.helpfunctions.checkNearbyTraps
-import com.example.trapzoneapp.helpfunctions.checkNearbyUsers
-import com.example.trapzoneapp.helpfunctions.loadNearbyObjects
-import com.example.trapzoneapp.helpfunctions.removeObjectFromFirebase
-import com.example.trapzoneapp.helpfunctions.removeTrapFromFirebase
-import com.example.trapzoneapp.helpfunctions.saveObjectToFirebase
-import com.example.trapzoneapp.helpfunctions.saveTrapToFirebase
-import com.example.trapzoneapp.helpfunctions.sendUserLocationToFirebase
+import com.example.trapzoneapp.helpfunctions.firebase.checkNearbyTraps
+import com.example.trapzoneapp.helpfunctions.firebase.checkNearbyUsers
+import com.example.trapzoneapp.helpfunctions.firebase.isObjectInRange
+import com.example.trapzoneapp.helpfunctions.firebase.loadNearbyObjects
+import com.example.trapzoneapp.helpfunctions.firebase.removeObjectFromFirebase
+import com.example.trapzoneapp.helpfunctions.firebase.removeTrapFromFirebase
+import com.example.trapzoneapp.helpfunctions.firebase.saveObjectToFirebase
+import com.example.trapzoneapp.helpfunctions.firebase.saveTrapToFirebase
+import com.example.trapzoneapp.helpfunctions.firebase.sendUserLocationToFirebase
 import com.example.trapzoneapp.helpfunctions.updateUserPoints
 import com.example.trapzoneapp.models.RewardsObjectInstance
 import com.example.trapzoneapp.models.TrapInstance
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.isGranted
-import com.google.android.gms.common.api.Scope
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -71,7 +70,6 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -123,7 +121,10 @@ fun MapScreen(modifier: Modifier=Modifier)
                             loadNearbyObjects(context,userLocation,markers)
                             checkNearbyTraps(context, userLocation){ traps->
                                 traps.forEach { trap ->
-                                    if (!trapQueue.contains(trap) && currentTrap.value != trap) {
+                                    val key= trap?.firebaseKey
+                                    val isAlreadyQueued = trapQueue.any { it?.firebaseKey == key }
+                                    val isCurrent = currentTrap.value?.firebaseKey == key
+                                    if (!isAlreadyQueued && !isCurrent) {
                                         trapQueue.add(trap)
                                     }
                                 }
@@ -164,7 +165,7 @@ fun TrapHandler(trapQueue: SnapshotStateList<TrapInstance?>, currentTrap: Mutabl
                 currentTrap.value = trapQueue.first()
                 trapQueue.removeAt(0)
             } else {
-                delay(100) // mali delay da se ne puni CPU
+                delay(100)
             }
         }
     }
@@ -209,9 +210,11 @@ fun MapScreenContent(context: Context, modifier: Modifier,
                         title = obj.rewardsObject.type+" objekat",
                         icon = obj.rewardsObject.getMarkerIcon(),
                         onClick = {
-                            updateUserPoints(obj.rewardsObject.exp,context,"za skupljanje ${obj.rewardsObject.type} objekta")
-                            removeObjectFromFirebase(obj)
-                            markers.remove(obj)
+                            if(isObjectInRange(context,userLocation,obj)){
+                                updateUserPoints(obj.rewardsObject.exp,context,"za skupljanje ${obj.rewardsObject.type} objekta")
+                                removeObjectFromFirebase(obj)
+                                markers.remove(obj)
+                            }
                             true
                         }
                     )

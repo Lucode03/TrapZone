@@ -17,7 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -67,7 +66,7 @@ fun ObjectTypePicker(
         Surface(
             shape = RoundedCornerShape(16.dp),
             tonalElevation = 4.dp,
-            modifier = Modifier.fillMaxWidth(0.9f) // zauzme ~90% širine ekrana
+            modifier = Modifier.fillMaxWidth(0.9f)
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),

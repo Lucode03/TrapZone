@@ -17,10 +17,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,8 +39,8 @@ fun TrapScreen(
 ) {
     var answer by remember { mutableStateOf("") }
     val context= LocalContext.current
-    val taskText = "${trap.op1} + ${trap.op2} = ?"
-    var timeLeft by remember { mutableLongStateOf(trap.time) }
+    val taskText = "${trap.question.op1} + ${trap.question.op2} = ?"
+    var timeLeft by remember { mutableIntStateOf(trap.question.time) }
     LaunchedEffect(trap) {
         while (timeLeft > 0) {
             delay(1000)
@@ -101,7 +99,7 @@ fun TrapScreen(
 
         Button(
             onClick = {
-                val expected = trap.result
+                val expected = trap.question.result
                 val userAnswer = answer.toIntOrNull()
                 if (userAnswer == expected) {
                     updateUserPoints(trap.trap.winningPoints, context,"za uspešno rešenu zamku")
