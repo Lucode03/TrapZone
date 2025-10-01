@@ -16,7 +16,6 @@ fun updateUserPoints(points: Int, context: Context,msg:String) {
     val uid = auth.currentUser?.uid ?: return
 
     val userRef = db.child(uid).child("points")
-
     userRef.runTransaction(object : Transaction.Handler {
         override fun doTransaction(currentData: MutableData): Transaction.Result {
             val currentPoints = currentData.getValue(Int::class.java) ?: 0
@@ -36,9 +35,9 @@ fun updateUserPoints(points: Int, context: Context,msg:String) {
                 Toast.makeText(context, "Greška: ${error.message}", Toast.LENGTH_SHORT).show()
             } else if (committed) {
                 if(points>0)
-                    Toast.makeText(context, "Dobili ste +${points} poena ${msg}!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Dobili ste +$points poena ${msg}!", Toast.LENGTH_SHORT).show()
                 else
-                    Toast.makeText(context, "Izgublili ste ${abs(points)} poena ${msg}.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Izgublili ste $points poena ${msg}.", Toast.LENGTH_SHORT).show()
             }
         }
     })
