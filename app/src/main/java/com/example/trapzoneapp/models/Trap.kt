@@ -36,7 +36,7 @@ sealed class Trap(val losingPoints:Int,val winningPoints:Int,val type:String,val
 data class TrapInstance(
     val trap: Trap,
     val location: LatLng,
-    val question: QuestionData,
-    val creator: String="",//user id
+    val question: Question,
+    val creatorId: String="",//user id
     val firebaseKey:String
 )

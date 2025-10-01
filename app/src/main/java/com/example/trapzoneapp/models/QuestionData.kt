@@ -4,8 +4,7 @@ data class QuestionData(
     val type: String = "",
     val op1: Int = 0,
     val op2: Int = 0,
-    val result: Int = 0,
-    val time: Int = 0
+    //val result: Int = 0
 ) {
     companion object {
         fun generateQuestionData(q: Question): QuestionData {
@@ -13,8 +12,7 @@ data class QuestionData(
                 type = q::class.simpleName ?: "",
                 op1 = q.op1,
                 op2 = q.op2,
-                result = q.result,
-                time = q.time
+               // result = q.result
             )
         }
 
