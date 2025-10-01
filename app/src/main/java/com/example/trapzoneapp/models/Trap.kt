@@ -1,15 +1,29 @@
 package com.example.trapzoneapp.models
 
 import androidx.compose.ui.graphics.Color
+import com.example.trapzoneapp.models.RewardsObject.Common
+import com.example.trapzoneapp.models.RewardsObject.Legendary
+import com.example.trapzoneapp.models.RewardsObject.Rare
+import com.example.trapzoneapp.models.RewardsObject.UltraRare
 import com.google.android.gms.maps.model.LatLng
 
 sealed class Trap(val losingPoints:Int,val winningPoints:Int,val type:String,val minPoints:Int)
 {
-    object Hard : Trap(-50,80,"Hard",30000)
-    object Medium : Trap(-40,60,"Medium",15000)
-    object Easy : Trap(-30,40,"Easy",5000)
+    object Hard : Trap(-100,150,"Hard",30000)
+    object Medium : Trap(-80,100,"Medium",15000)
+    object Easy : Trap(-50,70,"Easy",5000)
     object VeryEasy : Trap(-20,30,"Very Easy",0)
 
+    companion object {
+        fun generateTrap(type: String): Trap {
+            return when (type) {
+                "Hard" -> Hard
+                "Medium" -> Medium
+                "Easy" -> Easy
+                else -> VeryEasy
+            }
+        }
+    }
     fun getTrapColor(type: Trap): Color {
         return when (type) {
             is Hard -> Color(0xFFFF0000)
@@ -22,10 +36,7 @@ sealed class Trap(val losingPoints:Int,val winningPoints:Int,val type:String,val
 data class TrapInstance(
     val trap: Trap,
     val location: LatLng,
-    val op1: Int,
-    val op2: Int,
-    val result: Int,
-    val user: String,
-    val time: Long,
+    val question: QuestionData,
+    val creator: String="",//user id
     val firebaseKey:String
 )

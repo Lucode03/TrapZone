@@ -12,7 +12,7 @@ sealed class Question(val time: Int, val op1: Int, val op2: Int) {
     class OneDigit(op1: Int, op2: Int) : Question(5, op1, op2)
 
     companion object {
-        fun generate(type: Trap): Question {
+        fun generateQuestion(type: Trap): Question {
             return when (type) {
                 is Trap.Hard -> FourDigit(
                     Random.nextInt(1000, 9999),
