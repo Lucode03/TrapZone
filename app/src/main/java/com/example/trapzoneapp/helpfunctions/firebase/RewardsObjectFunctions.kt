@@ -1,0 +1,110 @@
+package com.example.trapzoneapp.helpfunctions.firebase
+
+import android.content.Context
+import android.location.Location
+import android.util.Log
+import android.widget.Toast
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import com.example.trapzoneapp.helpfunctions.updateUserPoints
+import com.example.trapzoneapp.models.RewardsObject
+import com.example.trapzoneapp.models.RewardsObject.Companion.generateRewardsObject
+import com.example.trapzoneapp.models.RewardsObjectInstance
+import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+
+fun saveObjectToFirebase(rewardsObject: RewardsObject, objectLocation: LatLng, context: Context) {
+
+    val db : DatabaseReference = FirebaseDatabase.getInstance().reference
+    val key = db.push().key ?: return
+    val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    val uid = auth.currentUser!!.uid
+    var name:String?
+    var surname:String?
+    db.child("users").child(uid).child("data").get()
+        .addOnSuccessListener { child ->
+            name = child.child("name").getValue(String::class.java)
+            surname= child.child("surname").getValue(String::class.java)
+
+            val objectData = mapOf(
+                "latitude" to objectLocation.latitude,
+                "longitude" to objectLocation.longitude,
+                "type" to rewardsObject.type,
+                "time" to System.currentTimeMillis(),
+                "creator" to "$name $surname"
+            )
+            db.child("objects").child(key).setValue(objectData)
+                .addOnFailureListener {e->
+                    Toast.makeText(context, "Greška pri čuvanju objekta: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+        }
+    updateUserPoints(50,context,"za postavljanje novog objekta")
+
+}
+fun removeObjectFromFirebase(obj: RewardsObjectInstance, onComplete: (Boolean) -> Unit = {}) {
+    val db = FirebaseDatabase.getInstance().getReference("objects")
+    val key= obj.firebaseKey
+    if (key.isEmpty()) {
+        onComplete(false)
+        return
+    }
+    db.child(key).removeValue()
+        .addOnSuccessListener { onComplete(true) }
+        .addOnFailureListener { e ->
+            Log.e("Firebase", "Neuspešno brisanje zamke: ${e.message}")
+            onComplete(false)
+        }
+}
+
+
+fun isObjectInRange(context: Context,userLocation: LatLng,obj:RewardsObjectInstance): Boolean {
+    val distance = FloatArray(1)
+    Location.distanceBetween(
+        userLocation.latitude, userLocation.longitude,
+        obj.location.latitude, obj.location.longitude,
+        distance
+    )
+    if (distance[0] < 500) {
+        return true
+    }
+    Toast.makeText(context, "Morate biti bliže objektu da biste skupili poene!", Toast.LENGTH_SHORT).show()
+    return false
+}
+
+
+fun loadNearbyObjects(context: Context,userLocation: LatLng,markers: SnapshotStateList<RewardsObjectInstance>) {
+    val db = FirebaseDatabase.getInstance().getReference("objects")
+
+    db.addValueEventListener(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            markers.clear()
+            snapshot.children.forEach { child ->
+                val key = child.key ?: return@forEach
+                val lat = child.child("latitude").getValue(Double::class.java) ?: return@forEach
+                val lon = child.child("longitude").getValue(Double::class.java) ?: return@forEach
+                val type = child.child("type").getValue(String::class.java) ?: return@forEach
+                val creator = child.child("creator").getValue(String::class.java) ?: return@forEach
+                val objectLocation = LatLng(lat, lon)
+
+                val distance = FloatArray(1)
+                Location.distanceBetween(
+                    userLocation.latitude, userLocation.longitude,
+                    objectLocation.latitude, objectLocation.longitude,
+                    distance
+                )
+
+                if (distance[0] < 3000) {
+                    val rewardsObject = generateRewardsObject(type)
+                    markers.add(RewardsObjectInstance(rewardsObject,objectLocation,key,creator))
+                }
+            }
+        }
+        override fun onCancelled(error: DatabaseError) {
+            Log.e("Firebase", "Greška pri čitanju objekata u blizini: ${error.message}")
+        }
+    })
+}
