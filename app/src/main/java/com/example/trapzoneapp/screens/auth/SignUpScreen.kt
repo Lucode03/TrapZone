@@ -190,7 +190,6 @@ fun SignUpScreen(modifier: Modifier = Modifier, navController: NavController, au
                     contentDescription = "Izabrana slika",
                     modifier = Modifier
                         .size(120.dp)
-                        .clip(CircleShape)
                 )
             }
             Spacer(modifier = Modifier.height((15.dp)))

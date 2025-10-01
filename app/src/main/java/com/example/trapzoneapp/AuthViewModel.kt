@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 class AuthViewModel: ViewModel() {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
-    private val db :DatabaseReference = FirebaseDatabase.getInstance().reference
+    private val db :DatabaseReference = FirebaseDatabase.getInstance().getReference("users")
     private val _authState = MutableLiveData<AuthState?>()
     val authState: LiveData<AuthState?> = _authState
 
@@ -85,7 +85,7 @@ class AuthViewModel: ViewModel() {
                                 "photoURL" to imageUrl
 
                             )
-                            db.child("users").child(uid).setValue(userMap)
+                            db.child(uid).child("data").setValue(userMap)
                                 .addOnSuccessListener {
                                     _authState.value = AuthState.Authenticated
                                 }
