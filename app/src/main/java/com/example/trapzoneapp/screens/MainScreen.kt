@@ -48,17 +48,16 @@ fun MainScreen(modifier: Modifier =Modifier, authNavController: NavController, a
         }
     )
     { innerPadding ->
-            Button(onClick = { authViewModel.signout() }) {
-                Text(text = "Odjavite se")
+        NavHost(
+            navController = mainNavController,
+            startDestination = NavItem.Home.route,
+            modifier = modifier.padding(innerPadding)
+        ) {
+            composable(NavItem.Home.route) {
+                HomeScreen(onSignOut = { authViewModel.signout() })
             }
-            NavHost(
-                navController = mainNavController,
-                startDestination = NavItem.Home.route,
-                modifier = modifier.padding(innerPadding)
-            ) {
-                composable(NavItem.Home.route) { HomeScreen() }
-                composable(NavItem.Rankings.route) { RankingsScreen() }
-                composable(NavItem.Map.route) { MapScreen() }
-            }
+            composable(NavItem.Rankings.route) { RankingsScreen() }
+            composable(NavItem.Map.route) { MapScreen() }
+        }
     }
 }
