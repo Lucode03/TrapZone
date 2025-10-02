@@ -2,6 +2,8 @@ package com.example.trapzoneapp.screens
 
 import android.app.Activity
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
@@ -45,18 +47,18 @@ fun MainScreen(modifier: Modifier =Modifier, authNavController: NavController, a
             BottomNavigationBar(mainNavController)
         }
     )
-        { innerPadding ->
-        Button(onClick = { authViewModel.signout() }) {
-            Text(text = "Odjavite se")
-        }
-        NavHost(
-            navController = mainNavController,
-            startDestination = NavItem.Home.route,
-            modifier = modifier.padding(innerPadding)
-        ) {
-            composable(NavItem.Home.route) { HomeScreen() }
-            composable(NavItem.Rankings.route) { RankingsScreen() }
-            composable(NavItem.Map.route) { MapScreen() }
-        }
+    { innerPadding ->
+            Button(onClick = { authViewModel.signout() }) {
+                Text(text = "Odjavite se")
+            }
+            NavHost(
+                navController = mainNavController,
+                startDestination = NavItem.Home.route,
+                modifier = modifier.padding(innerPadding)
+            ) {
+                composable(NavItem.Home.route) { HomeScreen() }
+                composable(NavItem.Rankings.route) { RankingsScreen() }
+                composable(NavItem.Map.route) { MapScreen() }
+            }
     }
 }

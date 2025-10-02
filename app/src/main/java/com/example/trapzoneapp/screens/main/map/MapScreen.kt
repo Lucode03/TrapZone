@@ -20,6 +20,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -61,6 +62,7 @@ import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.auth.FirebaseAuth
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
@@ -110,6 +112,8 @@ fun MapScreen(modifier: Modifier=Modifier)
 
                 val callback = object : LocationCallback() {
                     override fun onLocationResult(result: LocationResult) {
+                        FirebaseAuth.getInstance().currentUser ?: return
+
                         result.lastLocation?.let { location ->
                             userLocation = LatLng(location.latitude, location.longitude)
                             markerState.position=userLocation
@@ -137,7 +141,6 @@ fun MapScreen(modifier: Modifier=Modifier)
             }
         }
     }
-
     if (locationPermission.status.isGranted) {
         MapScreenContent(context,modifier,cameraPositionState,
             properties,uiSettings,markerState,userLocation,markers)
@@ -161,7 +164,7 @@ fun TrapHandler(trapQueue: SnapshotStateList<TrapInstance?>, currentTrap: Mutabl
     LaunchedEffect(trapQueue, currentTrap.value) {
         while (true) {
             if (currentTrap.value == null && trapQueue.isNotEmpty()) {
-                delay(2000) // pauza između zamki
+                delay(2000)
                 currentTrap.value = trapQueue.first()
                 trapQueue.removeAt(0)
             } else {
@@ -191,8 +194,7 @@ fun MapScreenContent(context: Context, modifier: Modifier,
 {
     var showObjectPicker by remember { mutableStateOf(false) }
     var showTrapPicker by remember { mutableStateOf(false) }
-    Scaffold {paddingValues->
-        Box(modifier = modifier.fillMaxSize().padding(paddingValues)) {
+        Box(modifier = modifier.fillMaxSize()) {
             GoogleMap(
                 modifier = modifier.fillMaxSize(),
                 cameraPositionState = cameraPositionState,
@@ -283,5 +285,4 @@ fun MapScreenContent(context: Context, modifier: Modifier,
                 }
             }
         }
-    }
 }
