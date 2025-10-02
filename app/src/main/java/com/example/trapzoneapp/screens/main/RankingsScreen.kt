@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -64,7 +65,7 @@ fun RankingsScreen(modifier: Modifier=Modifier) {
                 }
                 Row(
                     modifier = modifier
-                        .fillMaxWidth()
+                        .fillMaxWidth(0.95f)
                         .padding(vertical = 4.dp)
                         .background(backgroundColor, shape = RoundedCornerShape(10.dp))
                         .padding(16.dp),
