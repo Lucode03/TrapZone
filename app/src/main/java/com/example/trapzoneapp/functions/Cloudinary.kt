@@ -1,4 +1,4 @@
-package com.example.trapzoneapp.helpfunctions
+package com.example.trapzoneapp.functions
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

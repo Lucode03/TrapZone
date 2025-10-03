@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,11 +26,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.trapzoneapp.R
-import com.example.trapzoneapp.dataclasses.RankedUser
-import com.example.trapzoneapp.helpfunctions.firebase.loadRankings
+import com.example.trapzoneapp.classes.RankedUser
+import com.example.trapzoneapp.functions.firebase.loadRankings
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
 
 @Composable
 fun RankingsScreen(modifier: Modifier=Modifier) {

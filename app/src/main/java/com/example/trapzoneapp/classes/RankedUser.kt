@@ -1,4 +1,4 @@
-package com.example.trapzoneapp.dataclasses
+package com.example.trapzoneapp.classes
 
 data class RankedUser (val uid: String,
                  val fullName: String,

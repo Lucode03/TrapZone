@@ -1,9 +1,7 @@
-package com.example.trapzoneapp.helpfunctions.firebase
+package com.example.trapzoneapp.functions.firebase
 
 import android.util.Log
-import androidx.compose.ui.platform.LocalContext
-import com.example.trapzoneapp.dataclasses.RankedUser
-import com.google.firebase.auth.FirebaseAuth
+import com.example.trapzoneapp.classes.RankedUser
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase

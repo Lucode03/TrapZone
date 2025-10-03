@@ -1,4 +1,4 @@
-package com.example.trapzoneapp.dataclasses
+package com.example.trapzoneapp.classes
 
 import com.example.trapzoneapp.R
 

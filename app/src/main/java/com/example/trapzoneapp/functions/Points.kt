@@ -1,4 +1,4 @@
-package com.example.trapzoneapp.helpfunctions
+package com.example.trapzoneapp.functions
 
 import android.content.Context
 import android.widget.Toast
@@ -8,7 +8,6 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.MutableData
 import com.google.firebase.database.Transaction
-import kotlin.math.abs
 
 fun updateUserPoints(points: Int, context: Context,msg:String) {
     val auth = FirebaseAuth.getInstance()

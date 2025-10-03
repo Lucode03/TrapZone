@@ -4,8 +4,8 @@ import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.trapzoneapp.dataclasses.AuthState
-import com.example.trapzoneapp.helpfunctions.uploadToCloudinary
+import com.example.trapzoneapp.classes.AuthState
+import com.example.trapzoneapp.functions.uploadToCloudinary
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase

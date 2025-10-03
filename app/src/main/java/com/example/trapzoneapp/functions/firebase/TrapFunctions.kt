@@ -1,10 +1,10 @@
-package com.example.trapzoneapp.helpfunctions.firebase
+package com.example.trapzoneapp.functions.firebase
 
 import android.content.Context
 import android.location.Location
 import android.util.Log
 import android.widget.Toast
-import com.example.trapzoneapp.helpfunctions.showNotification
+import com.example.trapzoneapp.functions.showNotification
 import com.example.trapzoneapp.models.Question
 import com.example.trapzoneapp.models.QuestionData
 import com.example.trapzoneapp.models.QuestionData.Companion.generateQuestionFromData

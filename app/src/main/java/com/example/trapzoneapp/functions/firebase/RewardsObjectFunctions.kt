@@ -1,11 +1,11 @@
-package com.example.trapzoneapp.helpfunctions.firebase
+package com.example.trapzoneapp.functions.firebase
 
 import android.content.Context
 import android.location.Location
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import com.example.trapzoneapp.helpfunctions.updateUserPoints
+import com.example.trapzoneapp.functions.updateUserPoints
 import com.example.trapzoneapp.models.RewardsObject
 import com.example.trapzoneapp.models.RewardsObject.Companion.generateRewardsObject
 import com.example.trapzoneapp.models.RewardsObjectInstance
