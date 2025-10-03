@@ -142,7 +142,7 @@ fun MapScreen(modifier: Modifier=Modifier)
     if (locationPermission.status.isGranted) {
         MapScreenContent(context,modifier,cameraPositionState,
             properties,uiSettings,markerState,userLocation,markers)
-        TrapHandler(trapQueue,currentTrap)
+        TrapHandler(context,trapQueue,currentTrap)
 
     } else {
         Column(
@@ -158,7 +158,7 @@ fun MapScreen(modifier: Modifier=Modifier)
     }
 }
 @Composable
-fun TrapHandler(trapQueue: SnapshotStateList<TrapInstance?>, currentTrap: MutableState<TrapInstance?>) {
+fun TrapHandler(context:Context,trapQueue: SnapshotStateList<TrapInstance?>, currentTrap: MutableState<TrapInstance?>) {
     LaunchedEffect(trapQueue, currentTrap.value) {
         while (true) {
             if (currentTrap.value == null && trapQueue.isNotEmpty()) {
@@ -174,6 +174,7 @@ fun TrapHandler(trapQueue: SnapshotStateList<TrapInstance?>, currentTrap: Mutabl
     currentTrap.value?.let { trap ->
         Dialog(onDismissRequest = { currentTrap.value = null }) {
             TrapScreen(
+                context,
                 trap = trap,
                 onResult = {
                     removeTrapFromFirebase(trap)

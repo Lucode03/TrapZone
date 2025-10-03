@@ -1,5 +1,6 @@
 package com.example.trapzoneapp.screens.main.map
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -31,10 +32,10 @@ import com.example.trapzoneapp.models.TrapInstance
 import kotlinx.coroutines.delay
 
 @Composable
-fun TrapScreen(
-    trap: TrapInstance,
-    onResult: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+fun TrapScreen(context: Context,
+               trap: TrapInstance,
+               onResult: (Boolean) -> Unit,
+               modifier: Modifier = Modifier
 ) {
     var answer by remember { mutableStateOf("") }
     val taskText = "${trap.question.op1} + ${trap.question.op2} = ?"
@@ -44,7 +45,7 @@ fun TrapScreen(
             delay(1000)
             timeLeft -= 1
         }
-        updateUserPointsForTrap(trap.creatorId,
+        updateUserPointsForTrap(context,trap.creatorId,
             userPoints = trap.trap.losingPoints,
             creatorPoints = trap.trap.winningPoints)
         onResult(false)
@@ -102,12 +103,12 @@ fun TrapScreen(
                 val expected = trap.question.result
                 val userAnswer = answer.toIntOrNull()
                 if (userAnswer == expected) {
-                    updateUserPointsForTrap(trap.creatorId,
+                    updateUserPointsForTrap(context,trap.creatorId,
                         userPoints = trap.trap.winningPoints,
                         creatorPoints = trap.trap.losingPoints)
                     onResult(true)
                 } else {
-                    updateUserPointsForTrap(trap.creatorId,
+                    updateUserPointsForTrap(context,trap.creatorId,
                         userPoints = trap.trap.losingPoints,
                         creatorPoints = trap.trap.winningPoints)
                     onResult(false)

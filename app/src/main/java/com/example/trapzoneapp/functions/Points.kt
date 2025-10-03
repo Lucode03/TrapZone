@@ -28,23 +28,26 @@ fun updateUserPointsForObject(points: Int, context: Context,msg:String) {
                                  currentData: DataSnapshot? ) {
             if (error != null) {
                 Toast.makeText(context, "Greška: ${error.message}", Toast.LENGTH_SHORT).show()
-            } else if (committed) {
-                if(points>0)
+            } else {
                     Toast.makeText(context, "Dobili ste +$points poena ${msg}!",
                         Toast.LENGTH_SHORT).show()
-                else Toast.makeText(context, "Izgublili ste $points poena ${msg}.",
-                    Toast.LENGTH_SHORT).show() }
+            }
         }
     })
 }
 
-fun updateUserPointsForTrap(creatorId:String,userPoints: Int,creatorPoints: Int){
+fun updateUserPointsForTrap(context: Context,creatorId:String,userPoints: Int,creatorPoints: Int){
     val auth = FirebaseAuth.getInstance()
     val uid = auth.currentUser?.uid ?: return
     updateUserPointsById(uid,userPoints){ error,success, newPoints ->
         if (success) {
-            Log.d("Poeni za zamku", "Korisniku ažurirani poeni: $newPoints")
-        } else {
+            if(userPoints>0)
+                Toast.makeText(context, "Dobili ste +$userPoints poena za uspesno resenu zamku!",
+                    Toast.LENGTH_SHORT).show()
+            else Toast.makeText(context, "Izgublili ste $userPoints poena za neuspesno resenu zamku.",
+                Toast.LENGTH_SHORT).show()
+        }
+        else {
             Log.e("Poeni za zamku", "Greška pri ažuriranju korisnika: ${error?.message}")
         }
     }
