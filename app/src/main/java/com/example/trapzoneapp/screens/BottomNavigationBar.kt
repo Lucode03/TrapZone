@@ -4,10 +4,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -24,11 +26,15 @@ fun BottomNavigationBar(mainNavController: NavController)
         NavItem.Home,
         NavItem.Map
     )
-    NavigationBar{
+    NavigationBar(
+        containerColor = Color(0xFF1E1E1E),
+        contentColor = Color.White
+    ){
         bottomNavItems.forEach { item ->
+            val isSelected = currentRoute == item.route
             NavigationBarItem(
                 modifier = Modifier.size(40.dp),
-                selected = currentRoute == item.route,
+                selected = isSelected,
                 onClick = {
                     mainNavController.navigate(item.route) {
                         popUpTo(mainNavController.graph.startDestinationId) {
@@ -40,8 +46,16 @@ fun BottomNavigationBar(mainNavController: NavController)
                           },
                 icon = {
                     Icon(painter = painterResource(id = item.icon),
-                    contentDescription = item.label) },
-                label = { Text(text = item.label) }
+                        contentDescription = item.label,
+                        tint = if (isSelected) Color.White else Color.Gray) },
+                label = {
+                    Text(text = item.label,
+                        color = if (isSelected) Color.White else Color.Gray)
+                },
+                alwaysShowLabel = true,
+                colors = NavigationBarItemDefaults.colors(
+                    indicatorColor = Color.Transparent
+                )
             )
         }
     }
