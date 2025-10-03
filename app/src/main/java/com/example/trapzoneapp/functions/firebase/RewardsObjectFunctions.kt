@@ -5,7 +5,7 @@ import android.location.Location
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import com.example.trapzoneapp.functions.updateUserPoints
+import com.example.trapzoneapp.functions.updateUserPointsForObject
 import com.example.trapzoneapp.models.RewardsObject
 import com.example.trapzoneapp.models.RewardsObject.Companion.generateRewardsObject
 import com.example.trapzoneapp.models.RewardsObjectInstance
@@ -42,7 +42,7 @@ fun saveObjectToFirebase(rewardsObject: RewardsObject, objectLocation: LatLng, c
                     Toast.makeText(context, "Greška pri čuvanju objekta: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
         }
-    updateUserPoints(50,context,"za postavljanje novog objekta")
+    updateUserPointsForObject(50,context,"za postavljanje novog objekta")
 
 }
 fun removeObjectFromFirebase(obj: RewardsObjectInstance, onComplete: (Boolean) -> Unit = {}) {

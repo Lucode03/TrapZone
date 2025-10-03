@@ -26,16 +26,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.trapzoneapp.R
-import com.example.trapzoneapp.classes.RankedUser
-import com.example.trapzoneapp.functions.firebase.loadRankings
+import com.example.trapzoneapp.classes.UserStats
+import com.example.trapzoneapp.functions.firebase.loadRankingsByCategory
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun RankingsScreen(modifier: Modifier=Modifier) {
-    var rankings by remember { mutableStateOf<List<RankedUser>>(emptyList()) }
+    var rankings by remember { mutableStateOf<List<UserStats>>(emptyList()) }
 
     LaunchedEffect(Unit) {
-        loadRankings { list ->
+        loadRankingsByCategory("points") { list ->
             rankings = list
         }
     }
@@ -74,7 +74,7 @@ fun RankingsScreen(modifier: Modifier=Modifier) {
                         color = if (user.uid == FirebaseAuth.getInstance().currentUser!!.uid) Color.Blue else Color.Black
                     )
                     Text(
-                        "${user.points}",
+                        "${user.stat}",
                         fontWeight = FontWeight.Bold,
                         color = if (user.uid == FirebaseAuth.getInstance().currentUser!!.uid) Color.Blue else Color.Black
                     )

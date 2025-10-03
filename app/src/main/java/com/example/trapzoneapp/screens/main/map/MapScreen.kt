@@ -45,7 +45,7 @@ import com.example.trapzoneapp.functions.firebase.removeTrapFromFirebase
 import com.example.trapzoneapp.functions.firebase.saveObjectToFirebase
 import com.example.trapzoneapp.functions.firebase.saveTrapToFirebase
 import com.example.trapzoneapp.functions.firebase.sendUserLocationToFirebase
-import com.example.trapzoneapp.functions.updateUserPoints
+import com.example.trapzoneapp.functions.updateUserPointsForObject
 import com.example.trapzoneapp.models.RewardsObjectInstance
 import com.example.trapzoneapp.models.TrapInstance
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -210,7 +210,8 @@ fun MapScreenContent(context: Context, modifier: Modifier,
                         icon = obj.rewardsObject.getMarkerIcon(),
                         onClick = {
                             if(isObjectInRange(context,userLocation,obj)){
-                                updateUserPoints(obj.rewardsObject.exp,context,"za skupljanje ${obj.rewardsObject.type} objekta")
+                                updateUserPointsForObject(obj.rewardsObject.exp,context,
+                                    "za skupljanje ${obj.rewardsObject.type} objekta")
                                 removeObjectFromFirebase(obj)
                                 markers.remove(obj)
                             }

@@ -96,7 +96,7 @@ fun checkNearbyTraps(context: Context,userLocation: LatLng,
                     distance
                 )
 
-                if (distance[0] < 50 /*&& creatorId!=uid*/) {
+                if (distance[0] < 50 && creatorId!=uid) {
                     val trap = createTrapFromFirebase(child)
                     nearbyTraps.add(trap)
                 }

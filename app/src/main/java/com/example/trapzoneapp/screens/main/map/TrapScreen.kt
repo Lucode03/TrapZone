@@ -23,11 +23,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.trapzoneapp.functions.updateUserPoints
+import com.example.trapzoneapp.functions.updateUserPointsForTrap
 import com.example.trapzoneapp.models.TrapInstance
 import kotlinx.coroutines.delay
 
@@ -38,7 +37,6 @@ fun TrapScreen(
     modifier: Modifier = Modifier
 ) {
     var answer by remember { mutableStateOf("") }
-    val context= LocalContext.current
     val taskText = "${trap.question.op1} + ${trap.question.op2} = ?"
     var timeLeft by remember { mutableIntStateOf(trap.question.time) }
     LaunchedEffect(trap) {
@@ -46,7 +44,9 @@ fun TrapScreen(
             delay(1000)
             timeLeft -= 1
         }
-        updateUserPoints(trap.trap.losingPoints, context,"za neuspešno rešenu zamku")
+        updateUserPointsForTrap(trap.creatorId,
+            userPoints = trap.trap.losingPoints,
+            creatorPoints = trap.trap.winningPoints)
         onResult(false)
     }
     Column(
@@ -102,10 +102,14 @@ fun TrapScreen(
                 val expected = trap.question.result
                 val userAnswer = answer.toIntOrNull()
                 if (userAnswer == expected) {
-                    updateUserPoints(trap.trap.winningPoints, context,"za uspešno rešenu zamku")
+                    updateUserPointsForTrap(trap.creatorId,
+                        userPoints = trap.trap.winningPoints,
+                        creatorPoints = trap.trap.losingPoints)
                     onResult(true)
                 } else {
-                    updateUserPoints(trap.trap.losingPoints, context,"za neuspešno rešenu zamku")
+                    updateUserPointsForTrap(trap.creatorId,
+                        userPoints = trap.trap.losingPoints,
+                        creatorPoints = trap.trap.winningPoints)
                     onResult(false)
                 }
                 answer = ""
