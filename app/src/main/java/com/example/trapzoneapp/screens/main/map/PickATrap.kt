@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.example.trapzoneapp.functions.firebase.getUserPointsFromFirebase
 import com.example.trapzoneapp.models.Trap
 import com.example.trapzoneapp.models.Trap.Easy.getTrapColor
 import com.google.firebase.auth.FirebaseAuth
@@ -45,20 +46,9 @@ fun TrapTypePicker(
 ) {
     var userPoints by remember { mutableIntStateOf(0) }
 
-    val auth: FirebaseAuth = FirebaseAuth.getInstance()
-    val db : DatabaseReference = FirebaseDatabase.getInstance().getReference("users")
-    val uid = auth.currentUser!!.uid
-    LaunchedEffect(uid) {
-        db.child(uid).child("points")
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    userPoints = snapshot.getValue(Int::class.java) ?: 0
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    Log.e("Firebase", "Greška pri čitanju poena korisnika: ${error.message}")
-                }
-            })
+    LaunchedEffect(Unit) {
+        getUserPointsFromFirebase { points->
+            userPoints =points}
     }
     Dialog(onDismissRequest = { onDismiss() }) {
         Surface(

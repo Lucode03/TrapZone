@@ -4,6 +4,7 @@ import android.content.Context
 import android.location.Location
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.runtime.LaunchedEffect
 import com.example.trapzoneapp.functions.showNotification
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
@@ -12,7 +13,22 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-
+fun getUserPointsFromFirebase( onResult: (Int) -> Unit){
+    val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    val db : DatabaseReference = FirebaseDatabase.getInstance().getReference("users")
+    val uid = auth.currentUser!!.uid
+    db.child(uid).child("stats").child("points")
+        .addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val points = snapshot.getValue(Int::class.java) ?: 0
+                onResult(points)
+            }
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("Firebase", "Greška pri čitanju poena korisnika: ${error.message}")
+                onResult(0)
+            }
+        })
+}
 fun sendUserLocationToFirebase(userLocation: LatLng, context: Context) {
     val auth: FirebaseAuth = FirebaseAuth.getInstance()
     val db : DatabaseReference = FirebaseDatabase.getInstance().getReference("users")

@@ -15,12 +15,14 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.MutableData
+import com.google.firebase.database.Transaction
 import com.google.firebase.database.ValueEventListener
 
 fun saveObjectToFirebase(rewardsObject: RewardsObject, objectLocation: LatLng, context: Context) {
 
     val db : DatabaseReference = FirebaseDatabase.getInstance().reference
-    val key = db.push().key ?: return
+    val key = db.child("objects").push().key ?: return
     val auth: FirebaseAuth = FirebaseAuth.getInstance()
     val uid = auth.currentUser!!.uid
     var name:String?
@@ -38,6 +40,26 @@ fun saveObjectToFirebase(rewardsObject: RewardsObject, objectLocation: LatLng, c
                 "creator" to "$name $surname"
             )
             db.child("objects").child(key).setValue(objectData)
+                .addOnSuccessListener {
+                    val numObjectsRef = db.child("users").child(uid).child("stats").child("numObjects")
+                    numObjectsRef.runTransaction(object : Transaction.Handler {
+                        override fun doTransaction(currentData: MutableData): Transaction.Result {
+                            val currentValue = currentData.getValue(Int::class.java) ?: 0
+                            currentData.value = currentValue + 1
+                            return Transaction.success(currentData)
+                        }
+
+                        override fun onComplete(
+                            error: DatabaseError?,
+                            committed: Boolean,
+                            currentData: DataSnapshot?
+                        ) {
+                            if (error != null) {
+                                Toast.makeText(context, "Greška pri ažuriranju broja objekata", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    })
+                }
                 .addOnFailureListener {e->
                     Toast.makeText(context, "Greška pri čuvanju objekta: ${e.message}", Toast.LENGTH_SHORT).show()
                 }

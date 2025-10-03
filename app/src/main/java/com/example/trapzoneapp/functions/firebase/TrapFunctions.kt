@@ -17,13 +17,15 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.MutableData
+import com.google.firebase.database.Transaction
 import com.google.firebase.database.ValueEventListener
 
 fun saveTrapToFirebase(trap : Trap, trapLocation: LatLng, context: Context) {
     val auth: FirebaseAuth = FirebaseAuth.getInstance()
-    val db : DatabaseReference = FirebaseDatabase.getInstance().getReference("traps")
+    val db : DatabaseReference = FirebaseDatabase.getInstance().reference
     val uid = auth.currentUser!!.uid
-    val key = db.push().key ?: return
+    val key = db.child("traps").push().key ?: return
 
     val question= Question.generateQuestion(trap)
     val questionData= QuestionData.generateQuestionData(question)
@@ -34,7 +36,27 @@ fun saveTrapToFirebase(trap : Trap, trapLocation: LatLng, context: Context) {
         "type" to trap.type,
         "question" to questionData
     )
-    db.child(key).setValue(trapData)
+    db.child("traps").child(key).setValue(trapData)
+        .addOnSuccessListener {
+            val numTrapsRef = db.child("users").child(uid).child("stats").child("numTraps")
+            numTrapsRef.runTransaction(object : Transaction.Handler {
+                override fun doTransaction(currentData: MutableData): Transaction.Result {
+                    val currentValue = currentData.getValue(Int::class.java) ?: 0
+                    currentData.value = currentValue + 1
+                    return Transaction.success(currentData)
+                }
+
+                override fun onComplete(
+                    error: DatabaseError?,
+                    committed: Boolean,
+                    currentData: DataSnapshot?
+                ) {
+                    if (error != null) {
+                        Toast.makeText(context, "Greška pri ažuriranju broja zamki", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            })
+        }
         .addOnFailureListener {e->
             Toast.makeText(context, "Greška pri čuvanju zamke: ${e.message}", Toast.LENGTH_SHORT).show()
         }

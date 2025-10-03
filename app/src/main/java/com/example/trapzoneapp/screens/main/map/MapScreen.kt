@@ -35,6 +35,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.app.ActivityCompat
+import androidx.room.util.copy
 import com.example.trapzoneapp.R
 import com.example.trapzoneapp.functions.firebase.checkNearbyTraps
 import com.example.trapzoneapp.functions.firebase.checkNearbyUsers
@@ -114,8 +115,8 @@ fun MapScreen(modifier: Modifier=Modifier)
                         result.lastLocation?.let { location ->
                             userLocation = LatLng(location.latitude, location.longitude)
                             markerState.position=userLocation
-                            cameraPositionState.position = CameraPosition.fromLatLngZoom(
-                                userLocation, 15f)
+                            val currentZoom = cameraPositionState.position.zoom
+                            cameraPositionState.position = CameraPosition.fromLatLngZoom(userLocation, currentZoom)
 
                             sendUserLocationToFirebase(userLocation,context)
                             checkNearbyUsers(context,userLocation)
