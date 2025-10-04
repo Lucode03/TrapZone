@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -43,7 +44,7 @@ import com.google.firebase.auth.FirebaseAuth
 fun RankingsScreen(modifier: Modifier=Modifier) {
     val tabs = listOf("Ukupni poeni", "Postavljeni objekti", "Postavljene zamke")
     var selectedTab by remember { mutableIntStateOf(0) }
-    var rankings by remember { mutableStateOf<List<UserStats>>(emptyList()) }
+    val rankings = remember { mutableStateListOf<UserStats>() }
 
     LaunchedEffect(selectedTab) {
         val statShown = when(selectedTab) {
@@ -52,9 +53,8 @@ fun RankingsScreen(modifier: Modifier=Modifier) {
             2 -> "numTraps"
             else -> "points"
         }
-        loadRankingsByCategory(statShown) { list ->
-            rankings = list
-        }
+        rankings.clear()
+        loadRankingsByCategory(statShown,rankings)
     }
 
     Box(modifier = modifier.fillMaxSize())
