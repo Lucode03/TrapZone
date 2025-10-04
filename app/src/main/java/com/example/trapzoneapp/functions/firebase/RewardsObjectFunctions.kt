@@ -11,6 +11,7 @@ import com.example.trapzoneapp.models.RewardsObject.Companion.generateRewardsObj
 import com.example.trapzoneapp.models.RewardsObjectInstance
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -101,32 +102,59 @@ fun isObjectInRange(context: Context,userLocation: LatLng,obj:RewardsObjectInsta
 fun loadNearbyObjects(context: Context,userLocation: LatLng,markers: SnapshotStateList<RewardsObjectInstance>) {
     val db = FirebaseDatabase.getInstance().getReference("objects")
 
-    db.addValueEventListener(object : ValueEventListener {
+    db.addListenerForSingleValueEvent(object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
-            markers.clear()
-            snapshot.children.forEach { child ->
-                val key = child.key ?: return@forEach
-                val lat = child.child("latitude").getValue(Double::class.java) ?: return@forEach
-                val lon = child.child("longitude").getValue(Double::class.java) ?: return@forEach
-                val type = child.child("type").getValue(String::class.java) ?: return@forEach
-                val creator = child.child("creator").getValue(String::class.java) ?: return@forEach
-                val objectLocation = LatLng(lat, lon)
-
-                val distance = FloatArray(1)
-                Location.distanceBetween(
-                    userLocation.latitude, userLocation.longitude,
-                    objectLocation.latitude, objectLocation.longitude,
-                    distance
-                )
-
-                if (distance[0] < 3000) {
-                    val rewardsObject = generateRewardsObject(type)
-                    markers.add(RewardsObjectInstance(rewardsObject,objectLocation,key,creator))
-                }
+            if (!snapshot.exists()) {
+                markers.clear()
             }
         }
+        override fun onCancelled(error: DatabaseError) {}
+    })
+
+    db.addChildEventListener(object : ChildEventListener {
+        override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+            val obj = createRewardsObjectFromFirebase(snapshot, userLocation) ?: return
+            markers.add(obj)
+        }
+        override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+            val obj = createRewardsObjectFromFirebase(snapshot, userLocation) ?: return
+            val index = markers.indexOfFirst { it.firebaseKey == obj.firebaseKey }
+            if (index != -1) {
+                markers[index] = obj
+            }
+        }
+        override fun onChildRemoved(snapshot: DataSnapshot) {
+            val key = snapshot.key ?: return
+            markers.removeAll { it.firebaseKey == key }
+        }
+        override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
         override fun onCancelled(error: DatabaseError) {
             Log.e("Firebase", "Greška pri čitanju objekata u blizini: ${error.message}")
         }
     })
+}
+private fun createRewardsObjectFromFirebase(snapshot: DataSnapshot, userLocation: LatLng): RewardsObjectInstance? {
+    val key = snapshot.key ?: return null
+    val lat = snapshot.child("latitude").getValue(Double::class.java) ?: return null
+    val lon = snapshot.child("longitude").getValue(Double::class.java) ?: return null
+    val type = snapshot.child("type").getValue(String::class.java) ?: return null
+    val creator = snapshot.child("creator").getValue(String::class.java) ?: return null
+    val objectLocation = LatLng(lat, lon)
+
+    val distance = FloatArray(1)
+    Location.distanceBetween(
+        userLocation.latitude, userLocation.longitude,
+        objectLocation.latitude, objectLocation.longitude,
+        distance
+    )
+
+    if (distance[0] > 3000)
+        return null
+
+    val rewardsObject = generateRewardsObject(type)
+    return RewardsObjectInstance(
+        rewardsObject=rewardsObject,
+        location = objectLocation,
+        firebaseKey = key,
+        creator = creator)
 }

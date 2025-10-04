@@ -4,8 +4,7 @@ import android.content.Context
 import android.location.Location
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.runtime.LaunchedEffect
-import com.example.trapzoneapp.functions.showNotification
+import com.example.trapzoneapp.functions.showNearbyUserNotification
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -13,6 +12,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+
 fun getUserPointsFromFirebase( onResult: (Int) -> Unit){
     val auth: FirebaseAuth = FirebaseAuth.getInstance()
     val db : DatabaseReference = FirebaseDatabase.getInstance().getReference("users")
@@ -64,7 +64,7 @@ fun checkNearbyUsers(context: Context,userLocation: LatLng) {
                 )
 
                 if (distance[0] < 100 && uid!=user) {
-                    showNotification(context,
+                    showNearbyUserNotification(context,
                         "Korisnik u blizini!",
                         "Drugi korisnik je na ${distance[0].toInt()}m od vas.")
                 }

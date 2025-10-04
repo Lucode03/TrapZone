@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -46,6 +47,7 @@ import com.example.trapzoneapp.functions.firebase.removeTrapFromFirebase
 import com.example.trapzoneapp.functions.firebase.saveObjectToFirebase
 import com.example.trapzoneapp.functions.firebase.saveTrapToFirebase
 import com.example.trapzoneapp.functions.firebase.sendUserLocationToFirebase
+import com.example.trapzoneapp.functions.showNearbyTrapNotification
 import com.example.trapzoneapp.functions.updateUserPointsForObject
 import com.example.trapzoneapp.models.RewardsObjectInstance
 import com.example.trapzoneapp.models.TrapInstance
@@ -57,6 +59,7 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -90,7 +93,7 @@ fun MapScreen(modifier: Modifier=Modifier)
         permission = Manifest.permission.ACCESS_FINE_LOCATION
     )
     val markers = remember { mutableStateListOf<RewardsObjectInstance>() }
-    val trapQueue = remember { mutableStateListOf<TrapInstance?>() }
+    val trapQueue = remember { mutableStateListOf<TrapInstance>() }
     val currentTrap = remember { mutableStateOf<TrapInstance?>(null) }
     LaunchedEffect(locationPermission.status.isGranted) {
         if (locationPermission.status.isGranted) {
@@ -115,22 +118,11 @@ fun MapScreen(modifier: Modifier=Modifier)
                         result.lastLocation?.let { location ->
                             userLocation = LatLng(location.latitude, location.longitude)
                             markerState.position=userLocation
-                            val currentZoom = cameraPositionState.position.zoom
-                            cameraPositionState.position = CameraPosition.fromLatLngZoom(userLocation, currentZoom)
 
                             sendUserLocationToFirebase(userLocation,context)
                             checkNearbyUsers(context,userLocation)
                             loadNearbyObjects(context,userLocation,markers)
-                            checkNearbyTraps(context, userLocation){ traps->
-                                traps.forEach { trap ->
-                                    val key= trap?.firebaseKey
-                                    val isAlreadyQueued = trapQueue.any { it?.firebaseKey == key }
-                                    val isCurrent = currentTrap.value?.firebaseKey == key
-                                    if (!isAlreadyQueued && !isCurrent) {
-                                        trapQueue.add(trap)
-                                    }
-                                }
-                            }
+                            checkNearbyTraps(context, userLocation,trapQueue)
                         }
                     }
                 }
@@ -158,19 +150,19 @@ fun MapScreen(modifier: Modifier=Modifier)
     }
 }
 @Composable
-fun TrapHandler(context:Context,trapQueue: SnapshotStateList<TrapInstance?>, currentTrap: MutableState<TrapInstance?>) {
+fun TrapHandler(context:Context,trapQueue: SnapshotStateList<TrapInstance>, currentTrap: MutableState<TrapInstance?>) {
     LaunchedEffect(trapQueue, currentTrap.value) {
         while (true) {
-            if (currentTrap.value == null && trapQueue.isNotEmpty()) {
+            val nextTrap = trapQueue.firstOrNull()
+            if (currentTrap.value == null && nextTrap!=null) {
                 delay(2000)
-                currentTrap.value = trapQueue.first()
+                currentTrap.value = nextTrap
                 trapQueue.removeAt(0)
             } else {
                 delay(100)
             }
         }
     }
-
     currentTrap.value?.let { trap ->
         Dialog(onDismissRequest = { currentTrap.value = null }) {
             TrapScreen(
@@ -253,6 +245,26 @@ fun MapScreenContent(context: Context, modifier: Modifier,
                         )
                     }
                 }
+            }
+            FloatingActionButton(
+                onClick = {
+                    val currentZoom = cameraPositionState.position.zoom
+                    cameraPositionState.move(
+                        CameraUpdateFactory.newLatLngZoom(userLocation, currentZoom)
+                    )
+                },
+                containerColor = Color.Transparent,
+                modifier= Modifier
+                    .size(60.dp)
+                    .align(Alignment.BottomCenter),
+                elevation = FloatingActionButtonDefaults.elevation(0.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.center_point),
+                    contentDescription = "Centriraj lokaciju",
+                    contentScale = ContentScale.FillBounds,
+                    modifier = Modifier.fillMaxSize()
+                )
             }
             FloatingActionButton(
                 onClick = {
