@@ -1,6 +1,5 @@
-package com.example.trapzoneapp.screens.main.map
+package com.example.trapzoneapp.clickables
 
-import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,12 +25,6 @@ import androidx.compose.ui.window.Dialog
 import com.example.trapzoneapp.functions.firebase.getUserPointsFromFirebase
 import com.example.trapzoneapp.models.Trap
 import com.example.trapzoneapp.models.Trap.Easy.getTrapColor
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
 
 val trapTypes = listOf(
     Trap.Hard,

@@ -5,6 +5,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.trapzoneapp.classes.AuthState
+import com.example.trapzoneapp.functions.firebase.setUserActive
+import com.example.trapzoneapp.functions.firebase.setUserInactive
 import com.example.trapzoneapp.functions.uploadToCloudinary
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
@@ -48,6 +50,7 @@ class AuthViewModel: ViewModel() {
             .addOnCompleteListener{task->
                 if(task.isSuccessful){
                     _authState.value = AuthState.Authenticated
+                    setUserActive()
                 }else{
                     _authState.value = AuthState.Error(task.exception?.message?:"Došlo je do neke greške")
                 }
@@ -68,6 +71,7 @@ class AuthViewModel: ViewModel() {
             .addOnCompleteListener{task->
                 if(task.isSuccessful){
                     _authState.value = AuthState.Authenticated
+                    setUserActive()
                     val uid = auth.currentUser!!.uid
                     CoroutineScope(Dispatchers.IO).launch {
                         try {
@@ -102,6 +106,7 @@ class AuthViewModel: ViewModel() {
             }
     }
     fun signout(){
+        setUserInactive()
         auth.signOut()
         _authState.value = AuthState.Unauthenticated
     }

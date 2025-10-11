@@ -35,8 +35,7 @@ fun sendUserLocationToFirebase(userLocation: LatLng, context: Context) {
     val uid = auth.currentUser!!.uid
     val locationData = mapOf(
         "latitude" to userLocation.latitude,
-        "longitude" to userLocation.longitude,
-        //"time" to System.currentTimeMillis()
+        "longitude" to userLocation.longitude
     )
     db.child(uid).child("location").setValue(locationData)
         .addOnFailureListener {e->
@@ -52,9 +51,15 @@ fun checkNearbyUsers(context: Context,userLocation: LatLng) {
     db.addValueEventListener(object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
             snapshot.children.forEach { child ->
+                val user = child.key
+                if (uid==user)
+                    return@forEach
                 val lat = child.child("location").child("latitude").getValue(Double::class.java) ?: return@forEach
                 val lon = child.child("location").child("longitude").getValue(Double::class.java) ?: return@forEach
-                val user = child.key
+                val active = child.child("active").getValue(Boolean::class.java) ?: return@forEach
+
+                if(!active)
+                    return@forEach
 
                 val distance = FloatArray(1)
                 Location.distanceBetween(
@@ -63,7 +68,7 @@ fun checkNearbyUsers(context: Context,userLocation: LatLng) {
                     distance
                 )
 
-                if (distance[0] < 100 && uid!=user) {
+                if (distance[0] < 100) {
                     showNearbyUserNotification(context,
                         "Korisnik u blizini!",
                         "Drugi korisnik je na ${distance[0].toInt()}m od vas.")
@@ -74,4 +79,14 @@ fun checkNearbyUsers(context: Context,userLocation: LatLng) {
             Log.e("Firebase", "Greška pri čitanju korisnika u blizini: ${error.message}")
         }
     })
+}
+fun setUserActive(){
+    val user= FirebaseAuth.getInstance().currentUser?:return
+    val db : DatabaseReference = FirebaseDatabase.getInstance().getReference("users")
+    db.child(user.uid).child("active").setValue(true)
+}
+fun setUserInactive(){
+    val user= FirebaseAuth.getInstance().currentUser?:return
+    val db : DatabaseReference = FirebaseDatabase.getInstance().getReference("users")
+    db.child(user.uid).child("active").setValue(false)
 }

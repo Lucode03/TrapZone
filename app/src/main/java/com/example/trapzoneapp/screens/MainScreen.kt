@@ -16,9 +16,10 @@ import androidx.navigation.compose.rememberNavController
 import com.example.trapzoneapp.AuthViewModel
 import com.example.trapzoneapp.classes.AuthState
 import com.example.trapzoneapp.classes.NavItem
+import com.example.trapzoneapp.clickables.BottomNavigationBar
 import com.example.trapzoneapp.screens.main.HomeScreen
-import com.example.trapzoneapp.screens.main.map.MapScreen
 import com.example.trapzoneapp.screens.main.RankingsScreen
+import com.example.trapzoneapp.screens.main.map.MapScreen
 
 @Composable
 fun MainScreen(modifier: Modifier =Modifier, authNavController: NavController, authViewModel: AuthViewModel)

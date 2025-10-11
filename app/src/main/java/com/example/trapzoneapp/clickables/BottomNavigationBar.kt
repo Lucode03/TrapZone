@@ -1,4 +1,4 @@
-package com.example.trapzoneapp.screens
+package com.example.trapzoneapp.clickables
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
