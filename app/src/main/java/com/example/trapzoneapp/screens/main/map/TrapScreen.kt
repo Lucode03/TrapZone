@@ -16,21 +16,51 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import com.example.trapzoneapp.functions.firebase.removeTrapFromFirebase
 import com.example.trapzoneapp.functions.updateUserPointsForTrap
 import com.example.trapzoneapp.models.TrapInstance
 import kotlinx.coroutines.delay
 
+@Composable
+fun TrapHandler(
+    context: Context,
+    trapQueue: SnapshotStateList<TrapInstance>,
+    currentTrap: MutableState<TrapInstance?>
+) {
+    LaunchedEffect(trapQueue.size) {
+        if (currentTrap.value == null && trapQueue.isNotEmpty()) {
+            delay(2000)
+            currentTrap.value = trapQueue.removeFirstOrNull()
+        }
+    }
+
+    currentTrap.value?.let { trap ->
+        Dialog(onDismissRequest = { currentTrap.value = null }) {
+            TrapScreen(
+                context = context,
+                trap = trap,
+                onResult = {
+                    removeTrapFromFirebase(trap)
+                    currentTrap.value = null
+                }
+            )
+        }
+    }
+}
 @Composable
 fun TrapScreen(context: Context,
                trap: TrapInstance,

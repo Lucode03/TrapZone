@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
         val authViewModel:AuthViewModel by viewModels()
         setContent {
             TrapZoneAppTheme {
-                AuthNavigation(modifier = Modifier/*.padding(innerPadding)*/,authViewModel = authViewModel)
+                AuthNavigation(modifier = Modifier,authViewModel = authViewModel)
             }
         }
     }
