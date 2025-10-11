@@ -8,8 +8,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -83,7 +87,7 @@ fun MapScreen(modifier: Modifier=Modifier)
         onLocationUpdate = { location ->
             userLocation = location
             markerState.position = location
-            cameraPositionState.position = CameraPosition.fromLatLngZoom(location, 15f)
+            //cameraPositionState.position = CameraPosition.fromLatLngZoom(location, 15f)
 
             sendUserLocationToFirebase(location, context)
             checkNearbyUsers(context, location)
@@ -180,12 +184,13 @@ fun MapScreenContent(context: Context, modifier: Modifier,
                 },
                 containerColor = Color.Transparent,
                 modifier= Modifier
-                    .size(60.dp)
+                    .size(80.dp)
                     .align(Alignment.BottomCenter),
                 elevation = FloatingActionButtonDefaults.elevation(0.dp)
             ) {
+
                 Image(
-                    painter = painterResource(id = R.drawable.center_point),
+                    painter = painterResource(id = R.drawable.center),
                     contentDescription = "Centriraj lokaciju",
                     contentScale = ContentScale.FillBounds,
                     modifier = Modifier.fillMaxSize()
