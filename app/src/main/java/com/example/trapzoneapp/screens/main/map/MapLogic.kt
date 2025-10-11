@@ -81,36 +81,7 @@ fun PermissionRequestScreen(
         }
     }
 }
-//@Composable
-//fun TrapHandler(
-//    context:Context,
-//    trapQueue: SnapshotStateList<TrapInstance>,
-//    currentTrap: MutableState<TrapInstance?>) {
-//    LaunchedEffect(trapQueue, currentTrap.value) {
-//        while (true) {
-//            val nextTrap = trapQueue.firstOrNull()
-//            if (currentTrap.value == null && nextTrap!=null) {
-//                delay(2000)
-//                currentTrap.value = nextTrap
-//                trapQueue.removeAt(0)
-//            } else {
-//                delay(100)
-//            }
-//        }
-//    }
-//    currentTrap.value?.let { trap ->
-//        Dialog(onDismissRequest = { currentTrap.value = null }) {
-//            TrapScreen(
-//                context,
-//                trap = trap,
-//                onResult = {
-//                    removeTrapFromFirebase(trap)
-//                    currentTrap.value = null
-//                }
-//            )
-//        }
-//    }
-//}
+
 @Composable
 fun TrapHandler(
     context: Context,
