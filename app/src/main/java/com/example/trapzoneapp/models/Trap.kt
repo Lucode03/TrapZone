@@ -1,10 +1,6 @@
 package com.example.trapzoneapp.models
 
 import androidx.compose.ui.graphics.Color
-import com.example.trapzoneapp.models.RewardsObject.Common
-import com.example.trapzoneapp.models.RewardsObject.Legendary
-import com.example.trapzoneapp.models.RewardsObject.Rare
-import com.example.trapzoneapp.models.RewardsObject.UltraRare
 import com.google.android.gms.maps.model.LatLng
 
 sealed class Trap(val losingPoints:Int,val winningPoints:Int,val type:String,val minPoints:Int)

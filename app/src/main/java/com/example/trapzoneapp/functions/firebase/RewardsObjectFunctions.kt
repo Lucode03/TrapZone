@@ -36,6 +36,7 @@ fun saveObjectToFirebase(rewardsObject: RewardsObject, objectLocation: LatLng, c
             val objectData = mapOf(
                 "latitude" to objectLocation.latitude,
                 "longitude" to objectLocation.longitude,
+                "name" to rewardsObject.name,
                 "type" to rewardsObject.type,
                 "time" to System.currentTimeMillis(),
                 "creator" to "$name $surname"
@@ -139,6 +140,7 @@ private fun createRewardsObjectFromFirebase(snapshot: DataSnapshot, userLocation
     val lon = snapshot.child("longitude").getValue(Double::class.java) ?: return null
     val type = snapshot.child("type").getValue(String::class.java) ?: return null
     val creator = snapshot.child("creator").getValue(String::class.java) ?: return null
+    val name = snapshot.child("name").getValue(String::class.java) ?: return null
     val objectLocation = LatLng(lat, lon)
 
     val distance = FloatArray(1)
@@ -151,7 +153,7 @@ private fun createRewardsObjectFromFirebase(snapshot: DataSnapshot, userLocation
     if (distance[0] > 3000)
         return null
 
-    val rewardsObject = generateRewardsObject(type)
+    val rewardsObject = generateRewardsObject(type,name)
     return RewardsObjectInstance(
         rewardsObject=rewardsObject,
         location = objectLocation,

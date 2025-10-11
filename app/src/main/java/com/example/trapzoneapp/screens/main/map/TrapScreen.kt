@@ -50,7 +50,7 @@ fun TrapHandler(
 
     currentTrap.value?.let { trap ->
         Dialog(onDismissRequest = { currentTrap.value = null }) {
-            TrapScreen(
+            TrapDialog(
                 context = context,
                 trap = trap,
                 onResult = {
@@ -62,7 +62,7 @@ fun TrapHandler(
     }
 }
 @Composable
-fun TrapScreen(context: Context,
+fun TrapDialog(context: Context,
                trap: TrapInstance,
                onResult: (Boolean) -> Unit,
                modifier: Modifier = Modifier

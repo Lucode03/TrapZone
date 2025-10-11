@@ -8,12 +8,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -114,6 +110,7 @@ fun MapScreenContent(context: Context, modifier: Modifier,
 {
     var showObjectPicker by remember { mutableStateOf(false) }
     var showTrapPicker by remember { mutableStateOf(false) }
+    var selectedReward by remember { mutableStateOf<RewardsObjectInstance?>(null) }
         Box(modifier = modifier.fillMaxSize()) {
             GoogleMap(
                 modifier = modifier.fillMaxSize(),
@@ -133,15 +130,24 @@ fun MapScreenContent(context: Context, modifier: Modifier,
                         icon = obj.rewardsObject.getMarkerIcon(),
                         onClick = {
                             if(isObjectInRange(context,userLocation,obj)){
-                                updateUserPointsForObject(obj.rewardsObject.exp,context,
-                                    "za skupljanje ${obj.rewardsObject.type} objekta")
-                                removeObjectFromFirebase(obj)
-                                markers.remove(obj)
+                                selectedReward=obj
                             }
                             true
                         }
                     )
-
+                }
+                selectedReward?.let { reward ->
+                    RewardsObjectDialog(
+                        selectedObj = reward,
+                        onCollect = { obj ->
+                            updateUserPointsForObject(obj.rewardsObject.exp, context,
+                                "za skupljanje ${obj.rewardsObject.type} objekta")
+                            removeObjectFromFirebase(obj)
+                            markers.remove(obj)
+                            selectedReward = null
+                        },
+                        onDismiss = { selectedReward = null }
+                    )
                 }
             }
             FloatingActionButton(
