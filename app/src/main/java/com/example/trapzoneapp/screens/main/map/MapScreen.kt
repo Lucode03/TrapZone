@@ -31,14 +31,13 @@ import com.example.trapzoneapp.clickables.ObjectTypePicker
 import com.example.trapzoneapp.clickables.TrapTypePicker
 import com.example.trapzoneapp.functions.firebase.checkNearbyTraps
 import com.example.trapzoneapp.functions.firebase.checkNearbyUsers
-import com.example.trapzoneapp.functions.firebase.isObjectInRange
 import com.example.trapzoneapp.functions.firebase.loadNearbyObjects
 import com.example.trapzoneapp.functions.firebase.removeObjectFromFirebase
 import com.example.trapzoneapp.functions.firebase.saveObjectToFirebase
 import com.example.trapzoneapp.functions.firebase.saveTrapToFirebase
 import com.example.trapzoneapp.functions.firebase.sendUserLocationToFirebase
 import com.example.trapzoneapp.functions.updateUserPointsForObject
-import com.example.trapzoneapp.models.RewardsObjectInstance
+import com.example.trapzoneapp.models.DangerZoneInstance
 import com.example.trapzoneapp.models.TrapInstance
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -73,7 +72,7 @@ fun MapScreen(modifier: Modifier=Modifier)
     val uiSettings by remember{ mutableStateOf(MapUiSettings(zoomControlsEnabled = false)) }
     val properties by remember { mutableStateOf(MapProperties(mapType = MapType.NORMAL)) }
 
-    val markers = remember { mutableStateListOf<RewardsObjectInstance>() }
+    val markers = remember { mutableStateListOf<DangerZoneInstance>() }
     val trapQueue = remember { mutableStateListOf<TrapInstance>() }
     val currentTrap = remember { mutableStateOf<TrapInstance?>(null) }
     HandleLocationUpdates(
@@ -106,11 +105,11 @@ fun MapScreenContent(context: Context, modifier: Modifier,
                      cameraPositionState:CameraPositionState,
                      properties: MapProperties, uiSettings: MapUiSettings,
                      markerState: MarkerState, userLocation: LatLng,
-                     markers: SnapshotStateList<RewardsObjectInstance>)
+                     markers: SnapshotStateList<DangerZoneInstance>)
 {
     var showObjectPicker by remember { mutableStateOf(false) }
     var showTrapPicker by remember { mutableStateOf(false) }
-    var selectedReward by remember { mutableStateOf<RewardsObjectInstance?>(null) }
+    var selectedObject by remember { mutableStateOf<DangerZoneInstance?>(null) }
         Box(modifier = modifier.fillMaxSize()) {
             GoogleMap(
                 modifier = modifier.fillMaxSize(),
@@ -126,27 +125,26 @@ fun MapScreenContent(context: Context, modifier: Modifier,
                 markers.forEach { obj ->
                     Marker(
                         state = MarkerState(position = obj.location),
-                        title = obj.rewardsObject.type+" objekat",
-                        icon = obj.rewardsObject.getMarkerIcon(),
+                        title = obj.dangerObject.type+" opasnost!",
+                        icon = obj.dangerObject.getMarkerIcon(),
                         onClick = {
-                            if(isObjectInRange(context,userLocation,obj)){
-                                selectedReward=obj
-                            }
+                            selectedObject=obj
                             true
                         }
                     )
                 }
-                selectedReward?.let { reward ->
-                    RewardsObjectDialog(
+                selectedObject?.let { reward ->
+                    DangerZoneObjectDialog(
+                        userLocation=userLocation,
                         selectedObj = reward,
                         onCollect = { obj ->
-                            updateUserPointsForObject(obj.rewardsObject.exp, context,
-                                "za skupljanje ${obj.rewardsObject.type} objekta")
+                            updateUserPointsForObject(obj.dangerObject.exp, context,
+                                "za skupljanje ${obj.dangerObject.type} objekta")
                             removeObjectFromFirebase(obj)
                             markers.remove(obj)
-                            selectedReward = null
+                            selectedObject = null
                         },
-                        onDismiss = { selectedReward = null }
+                        onDismiss = { selectedObject = null }
                     )
                 }
             }

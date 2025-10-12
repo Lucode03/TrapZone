@@ -6,9 +6,9 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.example.trapzoneapp.functions.updateUserPointsForObject
-import com.example.trapzoneapp.models.RewardsObject
-import com.example.trapzoneapp.models.RewardsObject.Companion.generateRewardsObject
-import com.example.trapzoneapp.models.RewardsObjectInstance
+import com.example.trapzoneapp.models.DangerZone
+import com.example.trapzoneapp.models.DangerZone.Companion.generateObject
+import com.example.trapzoneapp.models.DangerZoneInstance
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.ChildEventListener
@@ -20,7 +20,7 @@ import com.google.firebase.database.MutableData
 import com.google.firebase.database.Transaction
 import com.google.firebase.database.ValueEventListener
 
-fun saveObjectToFirebase(rewardsObject: RewardsObject, objectLocation: LatLng, context: Context) {
+fun saveObjectToFirebase(dangerObject: DangerZone, objectLocation: LatLng, context: Context) {
 
     val db : DatabaseReference = FirebaseDatabase.getInstance().reference
     val key = db.child("objects").push().key ?: return
@@ -36,8 +36,8 @@ fun saveObjectToFirebase(rewardsObject: RewardsObject, objectLocation: LatLng, c
             val objectData = mapOf(
                 "latitude" to objectLocation.latitude,
                 "longitude" to objectLocation.longitude,
-                "name" to rewardsObject.name,
-                "type" to rewardsObject.type,
+                "name" to dangerObject.name,
+                "type" to dangerObject.type,
                 "time" to System.currentTimeMillis(),
                 "creator" to "$name $surname"
             )
@@ -50,7 +50,6 @@ fun saveObjectToFirebase(rewardsObject: RewardsObject, objectLocation: LatLng, c
                             currentData.value = currentValue + 1
                             return Transaction.success(currentData)
                         }
-
                         override fun onComplete(
                             error: DatabaseError?,
                             committed: Boolean,
@@ -69,7 +68,7 @@ fun saveObjectToFirebase(rewardsObject: RewardsObject, objectLocation: LatLng, c
     updateUserPointsForObject(50,context,"za postavljanje novog objekta")
 
 }
-fun removeObjectFromFirebase(obj: RewardsObjectInstance, onComplete: (Boolean) -> Unit = {}) {
+fun removeObjectFromFirebase(obj: DangerZoneInstance, onComplete: (Boolean) -> Unit = {}) {
     val db = FirebaseDatabase.getInstance().getReference("objects")
     val key= obj.firebaseKey
     if (key.isEmpty()) {
@@ -79,13 +78,13 @@ fun removeObjectFromFirebase(obj: RewardsObjectInstance, onComplete: (Boolean) -
     db.child(key).removeValue()
         .addOnSuccessListener { onComplete(true) }
         .addOnFailureListener { e ->
-            Log.e("Firebase", "Neuspešno brisanje zamke: ${e.message}")
+            Log.e("Firebase", "Neuspešno brisanje objekta: ${e.message}")
             onComplete(false)
         }
 }
 
 
-fun isObjectInRange(context: Context,userLocation: LatLng,obj:RewardsObjectInstance): Boolean {
+fun isObjectInRange(userLocation: LatLng,obj:DangerZoneInstance): Boolean {
     val distance = FloatArray(1)
     Location.distanceBetween(
         userLocation.latitude, userLocation.longitude,
@@ -95,12 +94,11 @@ fun isObjectInRange(context: Context,userLocation: LatLng,obj:RewardsObjectInsta
     if (distance[0] < 500) {
         return true
     }
-    Toast.makeText(context, "Morate biti bliže objektu da biste skupili poene!", Toast.LENGTH_SHORT).show()
     return false
 }
 
 
-fun loadNearbyObjects(context: Context,userLocation: LatLng,markers: SnapshotStateList<RewardsObjectInstance>) {
+fun loadNearbyObjects(context: Context,userLocation: LatLng,markers: SnapshotStateList<DangerZoneInstance>) {
     val db = FirebaseDatabase.getInstance().getReference("objects")
 
     db.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -134,7 +132,7 @@ fun loadNearbyObjects(context: Context,userLocation: LatLng,markers: SnapshotSta
         }
     })
 }
-private fun createRewardsObjectFromFirebase(snapshot: DataSnapshot, userLocation: LatLng): RewardsObjectInstance? {
+private fun createRewardsObjectFromFirebase(snapshot: DataSnapshot, userLocation: LatLng): DangerZoneInstance? {
     val key = snapshot.key ?: return null
     val lat = snapshot.child("latitude").getValue(Double::class.java) ?: return null
     val lon = snapshot.child("longitude").getValue(Double::class.java) ?: return null
@@ -153,9 +151,9 @@ private fun createRewardsObjectFromFirebase(snapshot: DataSnapshot, userLocation
     if (distance[0] > 3000)
         return null
 
-    val rewardsObject = generateRewardsObject(type,name)
-    return RewardsObjectInstance(
-        rewardsObject=rewardsObject,
+    val rewardsObject = generateObject(type,name)
+    return DangerZoneInstance(
+        dangerObject=rewardsObject,
         location = objectLocation,
         firebaseKey = key,
         creator = creator)

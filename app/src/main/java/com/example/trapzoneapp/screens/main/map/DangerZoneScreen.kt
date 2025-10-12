@@ -1,5 +1,7 @@
 package com.example.trapzoneapp.screens.main.map
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,14 +19,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.example.trapzoneapp.models.RewardsObjectInstance
+import com.example.trapzoneapp.functions.firebase.isObjectInRange
+import com.example.trapzoneapp.models.DangerZoneInstance
+import com.google.android.gms.maps.model.LatLng
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun RewardsObjectDialog(
-    selectedObj: RewardsObjectInstance,
-    onCollect: (RewardsObjectInstance) -> Unit,
+fun DangerZoneObjectDialog(
+    selectedObj: DangerZoneInstance,
     onDismiss: () -> Unit
 ){
+    val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy. HH:mm:ss")
+        .withZone(ZoneId.systemDefault())
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(16.dp),
@@ -36,9 +45,22 @@ fun RewardsObjectDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "${selectedObj.rewardsObject.type} nagrada: ${selectedObj.rewardsObject.name}",
+                    text = "${selectedObj.dangerObject.type} opasnost! ",
                     textAlign = TextAlign.Center,
-                    color = selectedObj.rewardsObject.getObjectColor(),
+                    color = selectedObj.dangerObject.getObjectColor(),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                Text(
+                    text = "Naziv :${selectedObj.dangerObject.name}",
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                Text(
+                    text = "Vreme kreiranja objekta : " +
+                            formatter.format(Instant.ofEpochMilli(selectedObj.time)),
+                    textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
@@ -49,21 +71,13 @@ fun RewardsObjectDialog(
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
-                Button(
-                    onClick = {
-                        onCollect(selectedObj) },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Pokupi nagradu")
-                }
-
                 Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedButton(
                     onClick = onDismiss,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Otkaži")
+                    Text("Zatvori")
                 }
             }
         }

@@ -13,9 +13,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -23,29 +21,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.example.trapzoneapp.functions.firebase.getUserPointsFromFirebase
-import com.example.trapzoneapp.models.RewardsObject
+import com.example.trapzoneapp.models.DangerZone
 import com.example.trapzoneapp.screens.auth.fields.CustomTextField
 
 val objectTypes = listOf(
-    RewardsObject.Legendary(""),
-    RewardsObject.UltraRare(""),
-    RewardsObject.Rare(""),
-    RewardsObject.Common("")
+    DangerZone.High(""),
+    DangerZone.Medium(""),
+    DangerZone.Low("")
 )
 
 @Composable
 fun ObjectTypePicker(
-    onTypeSelected: (RewardsObject) -> Unit,
+    onTypeSelected: (DangerZone) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var userPoints by remember { mutableIntStateOf(0) }
     var objectName by remember { mutableStateOf("") }
-
-    LaunchedEffect(Unit) {
-        getUserPointsFromFirebase { points->
-            userPoints =points}
-    }
 
     Dialog(onDismissRequest = { onDismiss() }) {
         Surface(
@@ -78,16 +68,15 @@ fun ObjectTypePicker(
                 objectTypes.forEach { obj ->
                     Button(
                         onClick = {
-                            val namedObj: RewardsObject = when (obj) {
-                                is RewardsObject.Legendary -> RewardsObject.Legendary(objectName)
-                                is RewardsObject.UltraRare -> RewardsObject.UltraRare(objectName)
-                                is RewardsObject.Rare -> RewardsObject.Rare(objectName)
-                                is RewardsObject.Common -> RewardsObject.Common(objectName)
+                            val namedObj: DangerZone = when (obj) {
+                                is DangerZone.High -> DangerZone.High(objectName)
+                                is DangerZone.Medium -> DangerZone.Medium(objectName)
+                                is DangerZone.Low -> DangerZone.Low(objectName)
                             }
                             onTypeSelected(namedObj)
                             onDismiss()
                         },
-                        enabled = objectName.isNotBlank() && (userPoints >= obj.minPoints),
+                        enabled = objectName.isNotBlank(),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = obj.getObjectColor().copy(alpha = 0.8f),
                             disabledContainerColor = obj.getObjectColor().copy(alpha = 0.4f)
