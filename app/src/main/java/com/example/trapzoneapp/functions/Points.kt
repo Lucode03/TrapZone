@@ -39,7 +39,7 @@ fun updateUserPointsForObject(points: Int, context: Context,msg:String) {
 fun updateUserPointsForTrap(context: Context,creatorId:String,userPoints: Int,creatorPoints: Int){
     val auth = FirebaseAuth.getInstance()
     val uid = auth.currentUser?.uid ?: return
-    updateUserPointsById(uid,userPoints){ error,success, newPoints ->
+    updateUserPointsById(uid,userPoints){ error, success, _ ->
         if (success) {
             if(userPoints>0)
                 Toast.makeText(context, "Dobili ste +$userPoints poena za uspesno resenu zamku!",

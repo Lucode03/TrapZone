@@ -5,9 +5,9 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.trapzoneapp.screens.MainScreen
 import com.example.trapzoneapp.screens.auth.LoginScreen
 import com.example.trapzoneapp.screens.auth.SignUpScreen
-import com.example.trapzoneapp.screens.MainScreen
 
 @Composable
 fun AuthNavigation(modifier: Modifier = Modifier,authViewModel: AuthViewModel)
