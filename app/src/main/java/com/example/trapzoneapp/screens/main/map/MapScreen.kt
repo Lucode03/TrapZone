@@ -14,6 +14,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -67,9 +68,9 @@ fun MapScreen(modifier: Modifier=Modifier)
     val locationPermission = rememberPermissionState(permission = Manifest.permission.ACCESS_FINE_LOCATION)
 
     var userLocation  by remember { mutableStateOf(LatLng(43.321473, 21.896174)) }
-
     val markerState = remember{ MarkerState(position = userLocation)}
     val cameraPositionState = rememberCameraPositionState { position = CameraPosition.fromLatLngZoom(userLocation, 15f) }
+    val currentZoom by remember {derivedStateOf{cameraPositionState.position.zoom} }
 
     val uiSettings by remember{ mutableStateOf(MapUiSettings(zoomControlsEnabled = false)) }
     val properties by remember { mutableStateOf(MapProperties(mapType = MapType.NORMAL)) }
@@ -84,7 +85,7 @@ fun MapScreen(modifier: Modifier=Modifier)
         onLocationUpdate = { location ->
             userLocation = location
             markerState.position = location
-            //cameraPositionState.position = CameraPosition.fromLatLngZoom(location, 15f)
+            cameraPositionState.position = CameraPosition.fromLatLngZoom(location, currentZoom)
 
             sendUserLocationToFirebase(location, context)
             checkNearbyUsers(context, location)
@@ -177,27 +178,26 @@ fun MapScreenContent(context: Context, modifier: Modifier,
                     }
                 }
             }
-            FloatingActionButton(
-                onClick = {
-                    val currentZoom = cameraPositionState.position.zoom
-                    cameraPositionState.move(
-                        CameraUpdateFactory.newLatLngZoom(userLocation, currentZoom)
-                    )
-                },
-                containerColor = Color.Transparent,
-                modifier= Modifier
-                    .size(80.dp)
-                    .align(Alignment.BottomCenter),
-                elevation = FloatingActionButtonDefaults.elevation(0.dp)
-            ) {
-
-                Image(
-                    painter = painterResource(id = R.drawable.center),
-                    contentDescription = "Centriraj lokaciju",
-                    contentScale = ContentScale.FillBounds,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+//            FloatingActionButton(
+//                onClick = {
+//                    cameraPositionState.move(
+//                        CameraUpdateFactory.newLatLngZoom(userLocation, currentZoom)
+//                    )
+//                },
+//                containerColor = Color.Transparent,
+//                modifier= Modifier
+//                    .size(80.dp)
+//                    .align(Alignment.BottomCenter),
+//                elevation = FloatingActionButtonDefaults.elevation(0.dp)
+//            ) {
+//
+//                Image(
+//                    painter = painterResource(id = R.drawable.center),
+//                    contentDescription = "Centriraj lokaciju",
+//                    contentScale = ContentScale.FillBounds,
+//                    modifier = Modifier.fillMaxSize()
+//                )
+//            }
             FloatingActionButton(
                 onClick = {
                     showTrapPicker = true

@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.trapzoneapp.models.DangerZone
@@ -49,6 +50,7 @@ fun ObjectTypePicker(
             ) {
                 Text(
                     text = "Unesite naziv objekta",
+                    textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
@@ -60,7 +62,7 @@ fun ObjectTypePicker(
 
                 Spacer(modifier = Modifier.height((30.dp)))
                 Text(
-                    text = "Izaberite tip objekta",
+                    text = "Izaberite nivo opasnosti",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )

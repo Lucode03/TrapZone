@@ -34,6 +34,12 @@ fun DangerZoneObjectDialog(
 ){
     val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy. HH:mm:ss")
         .withZone(ZoneId.systemDefault())
+    val numExcl = when(selectedObj.dangerObject.type) {
+        "Velika" -> 5
+        "Srednja" -> 3
+        else -> 1
+    }
+
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(16.dp),
@@ -45,14 +51,14 @@ fun DangerZoneObjectDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "${selectedObj.dangerObject.type} opasnost! ",
+                    text = "${selectedObj.dangerObject.type} opasnost${"!".repeat(numExcl)}",
                     textAlign = TextAlign.Center,
                     color = selectedObj.dangerObject.getObjectColor(),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
                 Text(
-                    text = "Naziv :${selectedObj.dangerObject.name}",
+                    text = "Naziv : ${selectedObj.dangerObject.name}",
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(bottom = 16.dp)

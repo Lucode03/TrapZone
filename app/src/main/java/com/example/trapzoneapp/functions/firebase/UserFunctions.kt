@@ -4,6 +4,7 @@ import android.content.Context
 import android.location.Location
 import android.util.Log
 import android.widget.Toast
+import com.example.trapzoneapp.classes.UserProfile
 import com.example.trapzoneapp.functions.showNearbyUserNotification
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
@@ -12,7 +13,29 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import kotlinx.coroutines.tasks.await
 
+suspend fun getUserInfo(): UserProfile {
+    val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    val db : DatabaseReference = FirebaseDatabase.getInstance().getReference("users")
+    val uid = auth.currentUser?.uid
+        ?: return UserProfile("", "", "", 0, 0,0)
+
+    val snapshot = db.child(uid)
+        .get()
+        .await()
+
+    val name = snapshot.child("data/name").getValue(String::class.java) ?: ""
+    val surname = snapshot.child("data/surname").getValue(String::class.java) ?: ""
+    val avatarUrl = snapshot.child("data/photoURL").getValue(String::class.java) ?: ""
+
+    val points = snapshot.child("stats/points").getValue(Int::class.java) ?: 0
+    val numTraps = snapshot.child("stats/numTraps").getValue(Int::class.java) ?: 0
+    val numObjects = snapshot.child("stats/numObjects").getValue(Int::class.java) ?: 0
+
+    return UserProfile(name, surname, avatarUrl, points, numTraps, numObjects)
+
+}
 fun getUserPointsFromFirebase( onResult: (Int) -> Unit){
     val auth: FirebaseAuth = FirebaseAuth.getInstance()
     val db : DatabaseReference = FirebaseDatabase.getInstance().getReference("users")
