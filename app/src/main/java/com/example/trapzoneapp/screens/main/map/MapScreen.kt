@@ -2,7 +2,9 @@ package com.example.trapzoneapp.screens.main.map
 
 import android.Manifest
 import android.content.Context
+import android.os.Build
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,12 +33,11 @@ import com.example.trapzoneapp.clickables.ObjectTypePicker
 import com.example.trapzoneapp.clickables.TrapTypePicker
 import com.example.trapzoneapp.functions.firebase.checkNearbyTraps
 import com.example.trapzoneapp.functions.firebase.checkNearbyUsers
+import com.example.trapzoneapp.functions.firebase.isObjectInRange
 import com.example.trapzoneapp.functions.firebase.loadNearbyObjects
-import com.example.trapzoneapp.functions.firebase.removeObjectFromFirebase
 import com.example.trapzoneapp.functions.firebase.saveObjectToFirebase
 import com.example.trapzoneapp.functions.firebase.saveTrapToFirebase
 import com.example.trapzoneapp.functions.firebase.sendUserLocationToFirebase
-import com.example.trapzoneapp.functions.updateUserPointsForObject
 import com.example.trapzoneapp.models.DangerZoneInstance
 import com.example.trapzoneapp.models.TrapInstance
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -56,6 +57,7 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun MapScreen(modifier: Modifier=Modifier)
@@ -86,7 +88,7 @@ fun MapScreen(modifier: Modifier=Modifier)
 
             sendUserLocationToFirebase(location, context)
             checkNearbyUsers(context, location)
-            loadNearbyObjects(context, location, markers)
+            loadNearbyObjects(location, markers)
             checkNearbyTraps(context, location, trapQueue)
         }
     )
@@ -100,6 +102,7 @@ fun MapScreen(modifier: Modifier=Modifier)
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MapScreenContent(context: Context, modifier: Modifier,
                      cameraPositionState:CameraPositionState,
@@ -128,22 +131,17 @@ fun MapScreenContent(context: Context, modifier: Modifier,
                         title = obj.dangerObject.type+" opasnost!",
                         icon = obj.dangerObject.getMarkerIcon(),
                         onClick = {
-                            selectedObject=obj
+                            if(isObjectInRange(userLocation,obj))
+                                selectedObject=obj
+                            else
+                                Toast.makeText(context, "Morate prići bliže objektu", Toast.LENGTH_SHORT).show()
                             true
                         }
                     )
                 }
                 selectedObject?.let { reward ->
                     DangerZoneObjectDialog(
-                        userLocation=userLocation,
                         selectedObj = reward,
-                        onCollect = { obj ->
-                            updateUserPointsForObject(obj.dangerObject.exp, context,
-                                "za skupljanje ${obj.dangerObject.type} objekta")
-                            removeObjectFromFirebase(obj)
-                            markers.remove(obj)
-                            selectedObject = null
-                        },
                         onDismiss = { selectedObject = null }
                     )
                 }

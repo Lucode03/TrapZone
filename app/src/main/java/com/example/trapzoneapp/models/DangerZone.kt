@@ -40,6 +40,6 @@ data class DangerZoneInstance(
     val dangerObject :DangerZone,
     val location: LatLng,
     val firebaseKey: String="",
-    val creator: String="",  //user.name + user.surname
-    val time:Long = System.currentTimeMillis()
+    val creator: String="",
+    val time:Long
 )

@@ -68,21 +68,20 @@ fun saveObjectToFirebase(dangerObject: DangerZone, objectLocation: LatLng, conte
     updateUserPointsForObject(50,context,"za postavljanje novog objekta")
 
 }
-fun removeObjectFromFirebase(obj: DangerZoneInstance, onComplete: (Boolean) -> Unit = {}) {
-    val db = FirebaseDatabase.getInstance().getReference("objects")
-    val key= obj.firebaseKey
-    if (key.isEmpty()) {
-        onComplete(false)
-        return
-    }
-    db.child(key).removeValue()
-        .addOnSuccessListener { onComplete(true) }
-        .addOnFailureListener { e ->
-            Log.e("Firebase", "Neuspešno brisanje objekta: ${e.message}")
-            onComplete(false)
-        }
-}
-
+//fun removeObjectFromFirebase(obj: DangerZoneInstance, onComplete: (Boolean) -> Unit = {}) {
+//    val db = FirebaseDatabase.getInstance().getReference("objects")
+//    val key= obj.firebaseKey
+//    if (key.isEmpty()) {
+//        onComplete(false)
+//        return
+//    }
+//    db.child(key).removeValue()
+//        .addOnSuccessListener { onComplete(true) }
+//        .addOnFailureListener { e ->
+//            Log.e("Firebase", "Neuspešno brisanje objekta: ${e.message}")
+//            onComplete(false)
+//        }
+//}
 
 fun isObjectInRange(userLocation: LatLng,obj:DangerZoneInstance): Boolean {
     val distance = FloatArray(1)
@@ -98,7 +97,7 @@ fun isObjectInRange(userLocation: LatLng,obj:DangerZoneInstance): Boolean {
 }
 
 
-fun loadNearbyObjects(context: Context,userLocation: LatLng,markers: SnapshotStateList<DangerZoneInstance>) {
+fun loadNearbyObjects(userLocation: LatLng,markers: SnapshotStateList<DangerZoneInstance>) {
     val db = FirebaseDatabase.getInstance().getReference("objects")
 
     db.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -112,11 +111,11 @@ fun loadNearbyObjects(context: Context,userLocation: LatLng,markers: SnapshotSta
 
     db.addChildEventListener(object : ChildEventListener {
         override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-            val obj = createRewardsObjectFromFirebase(snapshot, userLocation) ?: return
+            val obj = createDangerZoneFromFirebase(snapshot, userLocation) ?: return
             markers.add(obj)
         }
         override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-            val obj = createRewardsObjectFromFirebase(snapshot, userLocation) ?: return
+            val obj = createDangerZoneFromFirebase(snapshot, userLocation) ?: return
             val index = markers.indexOfFirst { it.firebaseKey == obj.firebaseKey }
             if (index != -1) {
                 markers[index] = obj
@@ -132,11 +131,12 @@ fun loadNearbyObjects(context: Context,userLocation: LatLng,markers: SnapshotSta
         }
     })
 }
-private fun createRewardsObjectFromFirebase(snapshot: DataSnapshot, userLocation: LatLng): DangerZoneInstance? {
+private fun createDangerZoneFromFirebase(snapshot: DataSnapshot, userLocation: LatLng): DangerZoneInstance? {
     val key = snapshot.key ?: return null
     val lat = snapshot.child("latitude").getValue(Double::class.java) ?: return null
     val lon = snapshot.child("longitude").getValue(Double::class.java) ?: return null
     val type = snapshot.child("type").getValue(String::class.java) ?: return null
+    val time = snapshot.child("time").getValue(Long::class.java) ?: return null
     val creator = snapshot.child("creator").getValue(String::class.java) ?: return null
     val name = snapshot.child("name").getValue(String::class.java) ?: return null
     val objectLocation = LatLng(lat, lon)
@@ -151,10 +151,12 @@ private fun createRewardsObjectFromFirebase(snapshot: DataSnapshot, userLocation
     if (distance[0] > 3000)
         return null
 
-    val rewardsObject = generateObject(type,name)
+    val obj = generateObject(type,name)
     return DangerZoneInstance(
-        dangerObject=rewardsObject,
+        dangerObject=obj,
         location = objectLocation,
         firebaseKey = key,
-        creator = creator)
+        creator = creator,
+        time=time
+        )
 }
