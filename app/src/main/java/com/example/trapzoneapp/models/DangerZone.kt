@@ -5,11 +5,11 @@ import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 
-sealed class DangerZone(val name: String, val exp: Int, val type:String)
+sealed class DangerZone(val name: String, val type:String)
 {
-    class High(name: String) : DangerZone(name,1000,"Velika")
-    class Medium(name: String) : DangerZone(name,250,"Srednja")
-    class Low(name: String) : DangerZone(name,100,"Mala")
+    class High(name: String) : DangerZone(name,"Velika")
+    class Medium(name: String) : DangerZone(name,"Srednja")
+    class Low(name: String) : DangerZone(name,"Mala")
 
     companion object {
         fun generateObject(type: String, name: String): DangerZone {
