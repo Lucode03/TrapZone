@@ -45,7 +45,7 @@ import com.example.trapzoneapp.functions.filterObjects
 import com.example.trapzoneapp.functions.firebase.checkNearbyTraps
 import com.example.trapzoneapp.functions.firebase.checkNearbyUsers
 import com.example.trapzoneapp.functions.firebase.isObjectInRange
-import com.example.trapzoneapp.functions.firebase.loadNearbyObjects
+import com.example.trapzoneapp.functions.firebase.loadObjects
 import com.example.trapzoneapp.functions.firebase.saveObjectToFirebase
 import com.example.trapzoneapp.functions.firebase.saveTrapToFirebase
 import com.example.trapzoneapp.functions.firebase.sendUserLocationToFirebase
@@ -99,7 +99,7 @@ fun MapScreen(modifier: Modifier=Modifier)
 
             sendUserLocationToFirebase(location, context)
             checkNearbyUsers(context, location)
-            loadNearbyObjects(location, markers)
+            loadObjects(markers)
             checkNearbyTraps(context, location, trapQueue)
         }
     )

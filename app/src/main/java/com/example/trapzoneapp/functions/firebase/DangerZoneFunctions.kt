@@ -97,7 +97,7 @@ fun isObjectInRange(userLocation: LatLng,obj:DangerZoneInstance): Boolean {
 }
 
 
-fun loadNearbyObjects(userLocation: LatLng,markers: SnapshotStateList<DangerZoneInstance>) {
+fun loadObjects(markers: SnapshotStateList<DangerZoneInstance>) {
     val db = FirebaseDatabase.getInstance().getReference("objects")
 
     db.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -111,11 +111,11 @@ fun loadNearbyObjects(userLocation: LatLng,markers: SnapshotStateList<DangerZone
 
     db.addChildEventListener(object : ChildEventListener {
         override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-            val obj = createDangerZoneFromFirebase(snapshot, userLocation) ?: return
+            val obj = createDangerZoneFromFirebase(snapshot) ?: return
             markers.add(obj)
         }
         override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-            val obj = createDangerZoneFromFirebase(snapshot, userLocation) ?: return
+            val obj = createDangerZoneFromFirebase(snapshot) ?: return
             val index = markers.indexOfFirst { it.firebaseKey == obj.firebaseKey }
             if (index != -1) {
                 markers[index] = obj
@@ -131,7 +131,7 @@ fun loadNearbyObjects(userLocation: LatLng,markers: SnapshotStateList<DangerZone
         }
     })
 }
-private fun createDangerZoneFromFirebase(snapshot: DataSnapshot, userLocation: LatLng): DangerZoneInstance? {
+private fun createDangerZoneFromFirebase(snapshot: DataSnapshot): DangerZoneInstance? {
     val key = snapshot.key ?: return null
     val lat = snapshot.child("latitude").getValue(Double::class.java) ?: return null
     val lon = snapshot.child("longitude").getValue(Double::class.java) ?: return null
@@ -140,16 +140,6 @@ private fun createDangerZoneFromFirebase(snapshot: DataSnapshot, userLocation: L
     val creator = snapshot.child("creator").getValue(String::class.java) ?: return null
     val name = snapshot.child("name").getValue(String::class.java) ?: return null
     val objectLocation = LatLng(lat, lon)
-
-    val distance = FloatArray(1)
-    Location.distanceBetween(
-        userLocation.latitude, userLocation.longitude,
-        objectLocation.latitude, objectLocation.longitude,
-        distance
-    )
-
-    if (distance[0] > 3000)
-        return null
 
     val obj = generateObject(type,name)
     return DangerZoneInstance(

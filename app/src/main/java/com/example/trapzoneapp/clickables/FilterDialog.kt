@@ -3,6 +3,7 @@ package com.example.trapzoneapp.clickables
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,7 +27,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextAlign
 import java.time.LocalDate
 import java.util.Calendar
@@ -54,6 +57,7 @@ fun FilterDialog(
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
+                val focusManager = LocalFocusManager.current
                 Text(
                     text = "Filtriraj objekte",
                     textAlign = TextAlign.Center,
@@ -78,6 +82,11 @@ fun FilterDialog(
                             readOnly = true,
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                             modifier = Modifier.menuAnchor()
+                                .pointerInput(Unit) {
+                                    detectTapGestures(onTap = {
+                                        focusManager.clearFocus()
+                                    })
+                            }
                         )
 
                         ExposedDropdownMenu(
@@ -102,11 +111,17 @@ fun FilterDialog(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ){
+
                     OutlinedTextField(
                         value = nameFilter,
                         onValueChange = onNameChange,
                         label = { Text("Naziv") },
                         modifier = Modifier.fillMaxWidth(0.9f)
+                            .pointerInput(Unit) {
+                                detectTapGestures(onTap = {
+                                    focusManager.clearFocus()
+                                })
+                            }
                     )
                     ResetButton { onNameChange("") }
                 }
@@ -120,6 +135,11 @@ fun FilterDialog(
                         onValueChange = onCreatorChange,
                         label = { Text("Kreator") },
                         modifier = Modifier.fillMaxWidth(0.9f)
+                            .pointerInput(Unit) {
+                                detectTapGestures(onTap = {
+                                    focusManager.clearFocus()
+                                })
+                            }
                     )
                     ResetButton { onCreatorChange("") }
                 }
