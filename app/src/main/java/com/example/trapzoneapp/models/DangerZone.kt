@@ -24,7 +24,7 @@ sealed class DangerZone(val name: String, val type:String)
         return when (this.type) {
             "Velika" -> Color(0xFFFF2020)
             "Srednja" -> Color(0xFF8137FF)
-            else -> Color(0xFFFF3C00)
+            else -> Color(0xFFFF6436)
         }
     }
     fun getMarkerIcon(): BitmapDescriptor {

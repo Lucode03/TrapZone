@@ -37,7 +37,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.trapzoneapp.R
+import com.example.trapzoneapp.ViewModels.MapViewModel
 import com.example.trapzoneapp.clickables.FilterDialog
 import com.example.trapzoneapp.clickables.ObjectTypePicker
 import com.example.trapzoneapp.clickables.TrapTypePicker
@@ -71,7 +73,7 @@ import java.time.LocalDate
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun MapScreen(modifier: Modifier=Modifier)
+fun MapScreen(viewModel: MapViewModel, modifier: Modifier=Modifier)
 {
     val context = LocalContext.current
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
@@ -85,7 +87,6 @@ fun MapScreen(modifier: Modifier=Modifier)
     val uiSettings by remember{ mutableStateOf(MapUiSettings(zoomControlsEnabled = false)) }
     val properties by remember { mutableStateOf(MapProperties(mapType = MapType.NORMAL)) }
 
-    val markers = remember { mutableStateListOf<DangerZoneInstance>() }
     val trapQueue = remember { mutableStateListOf<TrapInstance>() }
     val currentTrap = remember { mutableStateOf<TrapInstance?>(null) }
     HandleLocationUpdates(
@@ -99,13 +100,12 @@ fun MapScreen(modifier: Modifier=Modifier)
 
             sendUserLocationToFirebase(location, context)
             checkNearbyUsers(context, location)
-            loadObjects(markers)
             checkNearbyTraps(context, location, trapQueue)
         }
     )
     if (locationPermission.status.isGranted) {
         MapScreenContent(context,modifier,cameraPositionState,
-            properties,uiSettings,markerState,userLocation,markers)
+            properties,uiSettings,markerState,userLocation,viewModel)
         TrapHandler(context,trapQueue,currentTrap)
 
     } else {
@@ -119,7 +119,7 @@ fun MapScreenContent(context: Context, modifier: Modifier,
                      cameraPositionState:CameraPositionState,
                      properties: MapProperties, uiSettings: MapUiSettings,
                      markerState: MarkerState, userLocation: LatLng,
-                     markers: SnapshotStateList<DangerZoneInstance>)
+                     viewModel: MapViewModel)
 {
     var showObjectPicker by remember { mutableStateOf(false) }
     var showTrapPicker by remember { mutableStateOf(false) }
@@ -132,7 +132,8 @@ fun MapScreenContent(context: Context, modifier: Modifier,
     var dateFromFilter by remember { mutableStateOf<LocalDate?>(null) }
     var dateToFilter by remember { mutableStateOf<LocalDate?>(null) }
 
-    var filteredObjects by remember { mutableStateOf<List<DangerZoneInstance>>(markers) }
+    val dangerZones = viewModel.dangerZones
+    //var filteredDangerZones by remember { mutableStateOf<List<DangerZoneInstance>>(dangerZones) }
 
     Box(modifier = modifier.fillMaxSize()) {
         GoogleMap(
@@ -146,7 +147,7 @@ fun MapScreenContent(context: Context, modifier: Modifier,
                 title = "Vaša lokacija",
                 icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
             )
-            filteredObjects.forEach { obj ->
+            dangerZones.forEach { obj ->
                 Marker(
                     state = MarkerState(position = obj.location),
                     title = obj.dangerObject.type+" opasnost!",
@@ -200,10 +201,15 @@ fun MapScreenContent(context: Context, modifier: Modifier,
                 onDateFromChange = { dateFromFilter = it },
                 onDateToChange = { dateToFilter = it },
                 onApply = {
-                    filteredObjects= filterObjects(markers,creatorFilter,typeFilter,nameFilter,dateFromFilter,dateToFilter)
+                    val filteredObjects= filterObjects(dangerZones,creatorFilter,typeFilter,nameFilter,dateFromFilter,dateToFilter)
+                    viewModel.setDangerZones(filteredObjects)
                     showFilterDialog = false
                 },
-                onDismiss = { showFilterDialog = false }
+                onDismiss = { showFilterDialog = false },
+                onReset = {
+                    viewModel.loadDangerZones()
+                    showFilterDialog = false
+                }
             )
         }
         FloatingActionButton(

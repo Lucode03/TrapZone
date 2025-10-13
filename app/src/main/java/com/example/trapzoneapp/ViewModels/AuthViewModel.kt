@@ -1,4 +1,4 @@
-package com.example.trapzoneapp
+package com.example.trapzoneapp.ViewModels
 
 import android.net.Uri
 import androidx.lifecycle.LiveData

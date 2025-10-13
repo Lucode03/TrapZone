@@ -33,7 +33,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.trapzoneapp.AuthViewModel
+import com.example.trapzoneapp.ViewModels.AuthViewModel
 import com.example.trapzoneapp.R
 import com.example.trapzoneapp.classes.AuthState
 import com.example.trapzoneapp.screens.auth.fields.CustomTextField

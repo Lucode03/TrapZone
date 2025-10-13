@@ -24,7 +24,8 @@ fun BottomNavigationBar(mainNavController: NavController)
     val bottomNavItems = listOf(
         NavItem.Rankings,
         NavItem.Home,
-        NavItem.Map
+        NavItem.Map,
+        NavItem.List
     )
     NavigationBar(
         containerColor = Color(0xFF1E1E1E),

@@ -44,7 +44,7 @@ fun FilterDialog(
     dateFrom: LocalDate?, dateTo: LocalDate?,
     onCreatorChange: (String) -> Unit, onTypeChange: (String) -> Unit, onNameChange: (String) -> Unit,
     onDateFromChange: (LocalDate?) -> Unit, onDateToChange: (LocalDate?) -> Unit,
-    onApply: () -> Unit, onDismiss: () -> Unit)
+    onApply: () -> Unit, onDismiss: () -> Unit,onReset:()->Unit)
 {
     var expanded by remember { mutableStateOf(false) }
     val types = listOf("Velika", "Srednja", "Mala")
@@ -173,6 +173,10 @@ fun FilterDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
+                    TextButton(onClick = onReset) {
+                        Text("Poništi filtere")
+                    }
+                    Spacer(Modifier.width(8.dp))
                     Button(onClick = onApply) {
                         Text("Filtriraj")
                     }
@@ -185,9 +189,3 @@ fun FilterDialog(
         }
     }
 }
-//tabela
-//LazyColumn {
-//    items(filteredObjects) { obj ->
-//        Text("${obj.dangerObject.name} - ${obj.dangerObject.type}")
-//    }
-//}
