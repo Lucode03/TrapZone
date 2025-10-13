@@ -15,12 +15,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -41,6 +45,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,38 +61,40 @@ fun HomeScreen(modifier: Modifier = Modifier,onSignOut:()->Unit)
     LaunchedEffect(Unit) {
         userProfile = getUserInfo()
     }
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Moj profil", color = Color.Black, fontWeight = FontWeight.Bold) },
-                actions = {
-                    TextButton(onClick = onSignOut) {
-                        Text(
-                            "Odjavite se",
-                            color = Color.Red,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 20.sp,
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFFFFFFF),
-                    titleContentColor = Color.White
-                )
+    TopAppBar(
+        title = {
+            Text(
+                text = "Moj profil",
+                color = Color.Black,
+                fontWeight = FontWeight.Bold,
+                fontSize = 30.sp,
+                textAlign = TextAlign.Center,
+                modifier=Modifier.fillMaxWidth()
             )
         },
-        containerColor = Color(0xFF808080)
-    ) { paddingValues ->
-        if (userProfile != null) {
-            UserProfileContent(
-                userProfile = userProfile!!)
-        } else {
-            Box(modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-                contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+        actions = {
+            TextButton(onClick = onSignOut) {
+                Icon(
+                    Icons.AutoMirrored.Filled.ExitToApp,
+                    contentDescription = "Odjavite se",
+                    modifier=Modifier.size(40.dp),
+                    Color.Black
+                )
             }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color(0xFFFFFFFF),
+            titleContentColor = Color.White
+        )
+    )
+    if (userProfile != null) {
+        UserProfileContent(
+            userProfile = userProfile!!)
+    } else {
+        Box(modifier = Modifier
+            .fillMaxSize(),
+            contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
         }
     }
 }
