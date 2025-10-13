@@ -126,14 +126,13 @@ fun MapScreenContent(context: Context, modifier: Modifier,
     var showFilterDialog by remember { mutableStateOf(false) }
     var selectedObject by remember { mutableStateOf<DangerZoneInstance?>(null) }
 
-    var creatorFilter by remember { mutableStateOf("") }
-    var typeFilter by remember { mutableStateOf("") }
-    var nameFilter by remember { mutableStateOf("") }
-    var dateFromFilter by remember { mutableStateOf<LocalDate?>(null) }
-    var dateToFilter by remember { mutableStateOf<LocalDate?>(null) }
+    var creatorFilter by viewModel::creatorFilter
+    var typeFilter by viewModel::typeFilter
+    var nameFilter by viewModel::nameFilter
+    var dateFromFilter by viewModel::dateFromFilter
+    var dateToFilter by viewModel::dateToFilter
 
-    val dangerZones = viewModel.dangerZones
-    //var filteredDangerZones by remember { mutableStateOf<List<DangerZoneInstance>>(dangerZones) }
+    var filteredDangerZones by remember { mutableStateOf<List<DangerZoneInstance>>(viewModel.dangerZones) }
 
     Box(modifier = modifier.fillMaxSize()) {
         GoogleMap(
@@ -147,7 +146,7 @@ fun MapScreenContent(context: Context, modifier: Modifier,
                 title = "Vaša lokacija",
                 icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
             )
-            dangerZones.forEach { obj ->
+            filteredDangerZones.forEach { obj ->
                 Marker(
                     state = MarkerState(position = obj.location),
                     title = obj.dangerObject.type+" opasnost!",
@@ -195,19 +194,26 @@ fun MapScreenContent(context: Context, modifier: Modifier,
                 nameFilter = nameFilter,
                 dateFrom = dateFromFilter,
                 dateTo=dateToFilter,
-                onCreatorChange = { creatorFilter = it },
-                onTypeChange = { typeFilter = it },
-                onNameChange = { nameFilter = it },
-                onDateFromChange = { dateFromFilter = it },
-                onDateToChange = { dateToFilter = it },
+                onCreatorChange = { viewModel.creatorFilter = it },
+                onTypeChange = { viewModel.typeFilter = it },
+                onNameChange = { viewModel.nameFilter = it },
+                onDateFromChange = { viewModel.dateFromFilter = it },
+                onDateToChange = { viewModel.dateToFilter = it },
                 onApply = {
-                    val filteredObjects= filterObjects(dangerZones,creatorFilter,typeFilter,nameFilter,dateFromFilter,dateToFilter)
-                    viewModel.setDangerZones(filteredObjects)
+                    filteredDangerZones= filterObjects(
+                        objects = viewModel.allDangerZones,
+                        creator=creatorFilter,
+                        type = typeFilter,
+                        name = nameFilter,
+                        startDate = dateFromFilter,
+                        endDate = dateToFilter)
+                    viewModel.setDangerZones(filteredDangerZones)
                     showFilterDialog = false
                 },
                 onDismiss = { showFilterDialog = false },
                 onReset = {
-                    viewModel.loadDangerZones()
+                    viewModel.resetDangerZones()
+                    filteredDangerZones=viewModel.dangerZones
                     showFilterDialog = false
                 }
             )

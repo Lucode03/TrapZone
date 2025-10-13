@@ -100,25 +100,20 @@ fun isObjectInRange(userLocation: LatLng,obj:DangerZoneInstance): Boolean {
 fun loadObjects(markers: SnapshotStateList<DangerZoneInstance>) {
     val db = FirebaseDatabase.getInstance().getReference("objects")
 
-    db.addListenerForSingleValueEvent(object : ValueEventListener {
-        override fun onDataChange(snapshot: DataSnapshot) {
-            if (!snapshot.exists()) {
-                markers.clear()
-            }
-        }
-        override fun onCancelled(error: DatabaseError) {}
-    })
+    markers.clear()
 
     db.addChildEventListener(object : ChildEventListener {
         override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
             val obj = createDangerZoneFromFirebase(snapshot) ?: return
-            markers.add(obj)
+            if (markers.none { it.firebaseKey == obj.firebaseKey }) {
+                markers.add(obj)
+            }
         }
         override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
             val obj = createDangerZoneFromFirebase(snapshot) ?: return
             val index = markers.indexOfFirst { it.firebaseKey == obj.firebaseKey }
             if (index != -1) {
-                markers[index] = obj
+                markers[index] = obj.copy()
             }
         }
         override fun onChildRemoved(snapshot: DataSnapshot) {

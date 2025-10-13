@@ -3,6 +3,7 @@ package com.example.trapzoneapp.functions
 import android.location.Location
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.example.trapzoneapp.models.DangerZoneInstance
 import com.google.android.gms.maps.model.LatLng
 import java.time.Instant

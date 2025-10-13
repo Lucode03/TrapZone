@@ -177,7 +177,8 @@ fun FilterDialog(
                         Text("Poništi filtere")
                     }
                     Spacer(Modifier.width(8.dp))
-                    Button(onClick = onApply) {
+                    Button(
+                        onClick = onApply) {
                         Text("Filtriraj")
                     }
                     Spacer(Modifier.width(8.dp))
