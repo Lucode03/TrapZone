@@ -111,7 +111,7 @@ fun UserProfileContent(
     ){
         Image(
             painter = avatarPainter,
-            contentDescription = "User Avatar",
+            contentDescription = "Avatar",
             modifier = Modifier
                 .size(200.dp)
                 .clip(CircleShape)
@@ -136,6 +136,8 @@ fun UserProfileContent(
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.Start
             ) {
                 Text(
                     text = "Statistika",
@@ -148,58 +150,33 @@ fun UserProfileContent(
                 Spacer(modifier = Modifier.height(5.dp))
                 HorizontalDivider(thickness = 1.dp, color = Color.Gray, modifier = Modifier.fillMaxWidth())
                 Spacer(modifier = Modifier.height(5.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Poeni: ",
-                        textAlign = TextAlign.Start,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = "${userProfile.points}",
-                        textAlign = TextAlign.Center,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold)
-                }
+
+                Text(
+                    text = "Poeni: ${userProfile.points}",
+                    textAlign = TextAlign.Left,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+
                 Spacer(modifier = Modifier.height(5.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Postavljeni objekti: ",
-                        textAlign = TextAlign.Start,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = "${userProfile.numObjects}",
-                        textAlign = TextAlign.Center,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold)
-                }
+
+                Text(
+                    text = "Postavljeni objekti: ${userProfile.numObjects}",
+                    textAlign = TextAlign.Start,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+
                 Spacer(modifier = Modifier.height(5.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Postavljene zamke: ",
-                        textAlign = TextAlign.Start,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = "${userProfile.numTraps}",
-                        textAlign = TextAlign.Center,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold)
-                }
+
+                Text(
+                    text = "Postavljene zamke: ${userProfile.numTraps}",
+                    textAlign = TextAlign.Start,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+
             }
         }
     }
-
 }
