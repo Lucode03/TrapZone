@@ -19,6 +19,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,32 +31,46 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.example.trapzoneapp.functions.firebase.getNearbyTraps
+import com.example.trapzoneapp.functions.firebase.loadTraps
 import com.example.trapzoneapp.functions.firebase.removeTrapFromFirebase
 import com.example.trapzoneapp.functions.updateUserPointsForTrap
 import com.example.trapzoneapp.models.TrapInstance
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.delay
 
 @Composable
 fun TrapHandler(
     context: Context,
-    trapQueue: SnapshotStateList<TrapInstance>,
-    currentTrap: MutableState<TrapInstance?>
+//    allTraps: SnapshotStateList<TrapInstance>,
+    userLocation:LatLng
 ) {
-    LaunchedEffect(trapQueue.size) {
-        if (currentTrap.value == null && trapQueue.isNotEmpty()) {
+    var trapQueue by remember { mutableStateOf<List<TrapInstance>>(emptyList() ) }
+    var currentTrap by remember { mutableStateOf<TrapInstance?>(null) }
+    val allTraps= remember { mutableStateListOf<TrapInstance>() }
+
+    LaunchedEffect(Unit) {
+        loadTraps(context, userLocation, allTraps)
+    }
+    LaunchedEffect(allTraps.toList(), userLocation) {
+        trapQueue = getNearbyTraps(allTraps, userLocation)
+    }
+    LaunchedEffect(trapQueue) {
+        if (currentTrap == null && trapQueue.isNotEmpty()) {
             delay(2000)
-            currentTrap.value = trapQueue.removeFirstOrNull()
+            currentTrap = trapQueue.first()
+            trapQueue = trapQueue.drop(1)
         }
     }
 
-    currentTrap.value?.let { trap ->
-        Dialog(onDismissRequest = { currentTrap.value = null }) {
+    currentTrap?.let { trap ->
+        Dialog(onDismissRequest = { currentTrap = null }) {
             TrapDialog(
                 context = context,
                 trap = trap,
                 onResult = {
                     removeTrapFromFirebase(trap)
-                    currentTrap.value = null
+                    currentTrap = null
                 }
             )
         }

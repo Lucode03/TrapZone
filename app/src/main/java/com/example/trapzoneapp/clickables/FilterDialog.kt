@@ -2,8 +2,6 @@ package com.example.trapzoneapp.clickables
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,20 +19,13 @@ import androidx.compose.material3.*
 import androidx.compose.ui.window.Dialog
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextAlign
 import java.time.LocalDate
-import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
@@ -42,9 +33,12 @@ import java.util.Calendar
 fun FilterDialog(
     creatorFilter: String, typeFilter: String, nameFilter: String,
     dateFrom: LocalDate?, dateTo: LocalDate?,
+    minDistance: String, maxDistance: String,
     onCreatorChange: (String) -> Unit, onTypeChange: (String) -> Unit, onNameChange: (String) -> Unit,
     onDateFromChange: (LocalDate?) -> Unit, onDateToChange: (LocalDate?) -> Unit,
-    onApply: () -> Unit, onDismiss: () -> Unit,onReset:()->Unit)
+    onDistanceFromChange: (String?) -> Unit, onDistanceToChange: (String?) -> Unit,
+    onApply: () -> Unit, onDismiss: () -> Unit,
+    onReset:()->Unit)
 {
     var expanded by remember { mutableStateOf(false) }
     val types = listOf("Velika", "Srednja", "Mala")
@@ -168,6 +162,49 @@ fun FilterDialog(
                     )
                 }
 
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ){
+                    Text(
+                        text = "Udaljenost(u metrima)",
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.titleMedium)
+                    ResetButton {
+                        onDistanceToChange("")
+                        onDistanceFromChange("")
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = minDistance,
+                        onValueChange = { digit->
+                            val filtered = digit.filter { it.isDigit() }
+                            onDistanceFromChange(filtered)
+                                        },
+                        label = { Text("Od") },
+                        modifier = Modifier.weight(1f).padding(end = 4.dp),
+                        singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = maxDistance,
+                        onValueChange = { digit->
+                            val filtered = digit.filter { it.isDigit() }
+                            onDistanceToChange(filtered)
+                        },
+                        label = { Text("Do") },
+                        modifier = Modifier.weight(1f).padding(start = 4.dp),
+                        singleLine = true
+                    )
+                }
                 Spacer(Modifier.height(24.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),

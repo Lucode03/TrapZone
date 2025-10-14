@@ -22,13 +22,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,17 +37,15 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.trapzoneapp.R
 import com.example.trapzoneapp.ViewModels.MapViewModel
 import com.example.trapzoneapp.clickables.FilterDialog
 import com.example.trapzoneapp.clickables.ObjectTypePicker
 import com.example.trapzoneapp.clickables.TrapTypePicker
 import com.example.trapzoneapp.functions.filterObjects
-import com.example.trapzoneapp.functions.firebase.checkNearbyTraps
 import com.example.trapzoneapp.functions.firebase.checkNearbyUsers
 import com.example.trapzoneapp.functions.firebase.isObjectInRange
-import com.example.trapzoneapp.functions.firebase.loadObjects
+import com.example.trapzoneapp.functions.firebase.loadTraps
 import com.example.trapzoneapp.functions.firebase.saveObjectToFirebase
 import com.example.trapzoneapp.functions.firebase.saveTrapToFirebase
 import com.example.trapzoneapp.functions.firebase.sendUserLocationToFirebase
@@ -68,7 +66,6 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
-import java.time.LocalDate
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalPermissionsApi::class)
@@ -87,8 +84,6 @@ fun MapScreen(viewModel: MapViewModel, modifier: Modifier=Modifier)
     val uiSettings by remember{ mutableStateOf(MapUiSettings(zoomControlsEnabled = false)) }
     val properties by remember { mutableStateOf(MapProperties(mapType = MapType.NORMAL)) }
 
-    val trapQueue = remember { mutableStateListOf<TrapInstance>() }
-    val currentTrap = remember { mutableStateOf<TrapInstance?>(null) }
     HandleLocationUpdates(
         context = context,
         permissionGranted = locationPermission.status.isGranted,
@@ -100,13 +95,12 @@ fun MapScreen(viewModel: MapViewModel, modifier: Modifier=Modifier)
 
             sendUserLocationToFirebase(location, context)
             checkNearbyUsers(context, location)
-            checkNearbyTraps(context, location, trapQueue)
         }
     )
     if (locationPermission.status.isGranted) {
         MapScreenContent(context,modifier,cameraPositionState,
             properties,uiSettings,markerState,userLocation,viewModel)
-        TrapHandler(context,trapQueue,currentTrap)
+        TrapHandler(context/*,allTraps*/,userLocation)
 
     } else {
         PermissionRequestScreen(locationPermission)
@@ -126,11 +120,14 @@ fun MapScreenContent(context: Context, modifier: Modifier,
     var showFilterDialog by remember { mutableStateOf(false) }
     var selectedObject by remember { mutableStateOf<DangerZoneInstance?>(null) }
 
-    var creatorFilter by viewModel::creatorFilter
-    var typeFilter by viewModel::typeFilter
-    var nameFilter by viewModel::nameFilter
-    var dateFromFilter by viewModel::dateFromFilter
-    var dateToFilter by viewModel::dateToFilter
+    val creatorFilter by viewModel::creatorFilter
+    val typeFilter by viewModel::typeFilter
+    val nameFilter by viewModel::nameFilter
+    val dateFromFilter by viewModel::dateFromFilter
+    val dateToFilter by viewModel::dateToFilter
+
+    val minDistanceFilter by viewModel::minDistanceFilter
+    val maxDistanceFilter by viewModel::maxDistanceFilter
 
     var filteredDangerZones by remember { mutableStateOf<List<DangerZoneInstance>>(viewModel.dangerZones) }
 
@@ -193,26 +190,35 @@ fun MapScreenContent(context: Context, modifier: Modifier,
                 typeFilter = typeFilter,
                 nameFilter = nameFilter,
                 dateFrom = dateFromFilter,
-                dateTo=dateToFilter,
+                dateTo =dateToFilter,
+                minDistance = minDistanceFilter,
+                maxDistance =maxDistanceFilter,
                 onCreatorChange = { viewModel.creatorFilter = it },
                 onTypeChange = { viewModel.typeFilter = it },
                 onNameChange = { viewModel.nameFilter = it },
                 onDateFromChange = { viewModel.dateFromFilter = it },
                 onDateToChange = { viewModel.dateToFilter = it },
+                onDistanceFromChange ={ viewModel.minDistanceFilter=it ?:"0"},
+                onDistanceToChange ={ viewModel.maxDistanceFilter = it?:"${Int.MAX_VALUE}"},
                 onApply = {
                     filteredDangerZones= filterObjects(
                         objects = viewModel.allDangerZones,
+                        userLocation=userLocation,
                         creator=creatorFilter,
                         type = typeFilter,
                         name = nameFilter,
                         startDate = dateFromFilter,
-                        endDate = dateToFilter)
+                        endDate = dateToFilter,
+                        minMeters = minDistanceFilter,
+                        maxMeters = maxDistanceFilter
+                    )
                     viewModel.setDangerZones(filteredDangerZones)
                     showFilterDialog = false
                 },
                 onDismiss = { showFilterDialog = false },
                 onReset = {
                     viewModel.resetDangerZones()
+                    viewModel.resetFilters()
                     filteredDangerZones=viewModel.dangerZones
                     showFilterDialog = false
                 }

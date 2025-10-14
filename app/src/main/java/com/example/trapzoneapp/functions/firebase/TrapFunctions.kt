@@ -4,8 +4,11 @@ import android.content.Context
 import android.location.Location
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.example.trapzoneapp.functions.showNearbyTrapNotification
+import com.example.trapzoneapp.models.DangerZoneInstance
 import com.example.trapzoneapp.models.Question
 import com.example.trapzoneapp.models.QuestionData
 import com.example.trapzoneapp.models.QuestionData.Companion.generateQuestionFromData
@@ -78,68 +81,43 @@ fun removeTrapFromFirebase(trap: TrapInstance,onComplete: (Boolean) -> Unit = {}
         }
 }
 
-fun checkNearbyTraps(context: Context,userLocation: LatLng, nearbyTraps: SnapshotStateList<TrapInstance>
-)
+fun loadTraps(context: Context,userLocation: LatLng, allTraps: SnapshotStateList<TrapInstance>)
 {
-    val auth: FirebaseAuth = FirebaseAuth.getInstance()
-    val uid = auth.currentUser!!.uid
     val db = FirebaseDatabase.getInstance().getReference("traps")
-
-    db.addListenerForSingleValueEvent(object : ValueEventListener {
-        override fun onDataChange(snapshot: DataSnapshot) {
-            if (!snapshot.exists()) {
-                nearbyTraps.clear()
-            }
-        }
-        override fun onCancelled(error: DatabaseError) {}
-    })
-
     db.addChildEventListener(object : ChildEventListener {
         override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-            val obj = createTrapFromFirebase(snapshot, userLocation,uid) ?: return
-            nearbyTraps.add(obj)
+            val trap = createTrapFromFirebase(snapshot) ?: return
+            allTraps.add(trap)
         }
         override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-            val obj = createTrapFromFirebase(snapshot, userLocation,uid) ?: return
-            val index = nearbyTraps.indexOfFirst { it.firebaseKey == obj.firebaseKey }
+            val trap = createTrapFromFirebase(snapshot) ?: return
+            val index = allTraps.indexOfFirst { it.firebaseKey == trap.firebaseKey }
             if (index != -1) {
-                nearbyTraps[index] = obj
+                allTraps[index] = trap
             }
         }
         override fun onChildRemoved(snapshot: DataSnapshot) {
             val key = snapshot.key ?: return
-            nearbyTraps.removeAll { it.firebaseKey == key }
+            allTraps.removeAll { it.firebaseKey == key }
         }
         override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
         override fun onCancelled(error: DatabaseError) {
             Log.e("Firebase", "Greška pri čitanju zamki: ${error.message}")
         }
     })
-    if (nearbyTraps.isNotEmpty())
-    {
-        showNearbyTrapNotification(
-            context,
-            "ZAMKE u blizini!",
-            "Rešite ih da biste se izbavili."
-        )
+}
+fun getNearbyTraps(allTraps: SnapshotStateList<TrapInstance>,userLocation: LatLng):List<TrapInstance>{
+    return allTraps.filter {  trap->
+        isTrapInRange(userLocation,trap)
     }
 }
-private fun createTrapFromFirebase(child: DataSnapshot,userLocation: LatLng,uid:String): TrapInstance?{
-    val key = child.key ?: return null
-    val lat = child.child("latitude").getValue(Double::class.java) ?: return null
-    val lon = child.child("longitude").getValue(Double::class.java) ?: return null
-    val creatorId=child.child("creatorId").getValue(String::class.java) ?: return null
-    val type = child.child("type").getValue(String::class.java) ?: return null
-    val questionData = child.child("question").getValue(QuestionData::class.java) ?:return null
-
-    val distance = FloatArray(1)
-    Location.distanceBetween(
-        userLocation.latitude, userLocation.longitude,
-        lat, lon,
-        distance
-    )
-    if (distance[0] > 50 || creatorId==uid)
-        return null
+private fun createTrapFromFirebase(snapshot: DataSnapshot): TrapInstance?{
+    val key = snapshot.key ?: return null
+    val lat = snapshot.child("latitude").getValue(Double::class.java) ?: return null
+    val lon = snapshot.child("longitude").getValue(Double::class.java) ?: return null
+    val creatorId=snapshot.child("creatorId").getValue(String::class.java) ?: return null
+    val type = snapshot.child("type").getValue(String::class.java) ?: return null
+    val questionData = snapshot.child("question").getValue(QuestionData::class.java) ?:return null
 
     val trapType = generateTrap(type)
     val question = generateQuestionFromData(questionData)
@@ -150,4 +128,15 @@ private fun createTrapFromFirebase(child: DataSnapshot,userLocation: LatLng,uid:
         firebaseKey = key,
         creatorId = creatorId
     )
+}
+fun isTrapInRange(userLocation: LatLng,trap: TrapInstance): Boolean {
+    val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    val uid = auth.currentUser!!.uid
+    val distance = FloatArray(1)
+    Location.distanceBetween(
+        userLocation.latitude, userLocation.longitude,
+        trap.location.latitude, trap.location.longitude,
+        distance
+    )
+    return distance[0] <= 50 && trap.creatorId!=uid
 }

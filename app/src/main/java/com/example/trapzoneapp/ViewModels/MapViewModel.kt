@@ -17,6 +17,9 @@ class MapViewModel : ViewModel() {
     var dateFromFilter by  mutableStateOf<LocalDate?>(null)
     var dateToFilter by  mutableStateOf<LocalDate?>(null)
 
+    var minDistanceFilter by  mutableStateOf("")
+    var maxDistanceFilter by  mutableStateOf("")
+
     var allDangerZones=mutableStateListOf<DangerZoneInstance>()
         private set
     var dangerZones = mutableStateListOf<DangerZoneInstance>()
@@ -35,5 +38,14 @@ class MapViewModel : ViewModel() {
     fun resetDangerZones(){
         dangerZones.clear()
         dangerZones.addAll(allDangerZones)
+    }
+    fun resetFilters(){
+        creatorFilter =""
+        typeFilter =""
+        nameFilter =""
+        dateFromFilter=null
+        dateToFilter =null
+        minDistanceFilter =""
+        maxDistanceFilter =""
     }
 }
